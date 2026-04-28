@@ -1,0 +1,11 @@
+{
+    "id": "tab-settings-enhanced",
+    "name": "Tab Settings Enhanced",
+    "version": "1.0.0",
+    "minAppVersion": "1.0.0",
+    "description": "Enhanced tab management: control where new tabs open and which tab activates after closing. Parent-child color marking. Supports parent-relative positioning.",
+    "author": "ez",
+    "authorUrl": "https://github.com/wonderez",
+    "fundingUrl": "https://afdian.net/a/wonderez",
+    "isDesktopOnly": false
+}
