@@ -178,7 +178,9 @@ const TRANSLATIONS = {
         tabNavigatorSearch: "Search tabs or history...",
         tabNavigatorOpenTabs: "Open Tabs",
         tabNavigatorRecentClosed: "Recently Closed",
-        tabNavigatorHint: "Alt+Letter: switch | Ctrl+Letter: close | ↑↓: select | Enter: confirm | ESC: exit",
+        tabNavigatorHint: "Tap Alt then letter: open | Tap Ctrl then letter: close | ↑↓: select | Enter: confirm | ESC: exit",
+        tabNavigatorModeOpen: "▶ OPEN MODE — press a letter to open that tab · ESC to cancel",
+        tabNavigatorModeClose: "✕ CLOSE MODE — press a letter to close that tab · ESC to cancel",
         tabNavigatorEmpty: "No matching tabs",
         tabNavigatorCmd: "Open Tab Navigator",
 
@@ -308,7 +310,9 @@ const TRANSLATIONS = {
         tabNavigatorSearch: "搜索标签或历史...",
         tabNavigatorOpenTabs: "打开的标签",
         tabNavigatorRecentClosed: "最近关闭",
-        tabNavigatorHint: "Alt+字母 切换 | Ctrl+字母 关闭 | ↑↓ 选择 | Enter 确认 | ESC 退出",
+        tabNavigatorHint: "点按 Alt→字母 打开 | 点按 Ctrl→字母 关闭 | ↑↓ 选择 | Enter 确认 | ESC 退出",
+        tabNavigatorModeOpen: "▶ 打开模式 — 按字母打开对应标签 · ESC 取消",
+        tabNavigatorModeClose: "✕ 关闭模式 — 按字母关闭对应标签 · ESC 取消",
         tabNavigatorEmpty: "没有匹配的标签",
         tabNavigatorCmd: "打开标签导航器",
 
@@ -711,32 +715,23 @@ class TabSettingsEnhancedPlugin extends obsidian.Plugin {
             .workspace-tab-header[data-tab-color] {
                 position: relative;
             }
-            .workspace-tab-header[data-tab-color]::before {
-                content: '';
-                position: absolute;
-                left: 0;
-                top: 0;
-                right: 0;
-                bottom: 0;
-                background-color: var(--tab-bg-color);
-                opacity: var(--tab-bg-opacity, 0.3);
-                border-radius: inherit;
-                pointer-events: none;
-                z-index: 0;
-            }
-            .workspace-tab-header[data-tab-color] .workspace-tab-header-inner {
-                position: relative;
-                z-index: 1;
-            }
             .workspace-tab-header[data-tab-color]::after {
                 content: '';
                 position: absolute;
-                left: 0;
                 bottom: 0;
-                right: 0;
+                left: 50%;
+                transform: translateX(-50%);
+                width: 20%;          /* 未激活：占标签宽 1/5 */
                 height: 3px;
                 background-color: var(--tab-bg-color);
-                border-radius: 0 0 3px 3px;
+                opacity: var(--tab-bg-opacity, 0.3);  /* 未激活弱化，透明度随设置 */
+                border-radius: 3px 3px 0 0;
+                pointer-events: none;
+                transition: width 0.15s ease, opacity 0.15s ease;
+            }
+            .workspace-tab-header[data-tab-color].is-active::after {
+                width: 33.33%;       /* 激活：占标签宽 1/3 */
+                opacity: 1;
             }
             
             /* 标签导航器模态框样式 */
@@ -814,6 +809,11 @@ class TabSettingsEnhancedPlugin extends obsidian.Plugin {
                 color: var(--text-muted);
                 text-align: center;
                 flex-shrink: 0;
+            }
+            .tab-navigator-hint.tab-navigator-mode-armed {
+                color: var(--text-accent);
+                font-weight: 600;
+                background: var(--background-modifier-hover);
             }
 
             /* 每标签历史计数（原生 返回/前进 按钮旁） */
@@ -2452,6 +2452,8 @@ class TabNavigatorModal extends obsidian.Modal {
         this.summaryCache = new Map();  // path -> summary string
         this.summaryLoadingPaths = new Set();  // 正在加载摘要的路径
         this.selectableItems = [];  // 实际渲染/键盘可选的项（filter() 中计算）
+        this.keyMode = null;        // 序列快捷键模式：null | 'open' | 'close'
+        this._modTapCandidate = null;  // 修饰键点按候选（keydown 记录，keyup 确认）
     }
 
     getLang() {
@@ -2584,6 +2586,8 @@ class TabNavigatorModal extends obsidian.Modal {
         // 键盘事件（在捕获阶段处理，优先于输入框默认行为）
         this.keydownHandler = (evt) => this.onKeydown(evt);
         this.searchInput.addEventListener('keydown', this.keydownHandler, true);
+        this.keyupHandler = (evt) => this.onKeyup(evt);
+        this.searchInput.addEventListener('keyup', this.keyupHandler, true);
         
         // 监听工作区变化，自动刷新列表（标签打开/关闭/切换时）
         this.layoutChangeHandler = () => {
@@ -2615,6 +2619,9 @@ class TabNavigatorModal extends obsidian.Modal {
         const { contentEl } = this;
         if (this.keydownHandler && this.searchInput) {
             this.searchInput.removeEventListener('keydown', this.keydownHandler, true);
+        }
+        if (this.keyupHandler && this.searchInput) {
+            this.searchInput.removeEventListener('keyup', this.keyupHandler, true);
         }
         // 清理工作区事件监听
         if (this.layoutChangeHandler) {
@@ -3287,7 +3294,47 @@ class TabNavigatorModal extends obsidian.Modal {
     // 键盘事件处理
     onKeydown(evt) {
         const key = evt.key.toLowerCase();
-        
+
+        // ── 序列快捷键：先点按 Alt（打开模式）或 Ctrl（关闭模式），再按字母 ──
+        // 点按检测：修饰键 keydown 记候选，keyup 时才确认进入模式；
+        // 按住不放 + 其他键 = 组合键（如 Alt+A 截图），放行不拦截，避免劫持全局快捷键
+        if (key === 'alt') {
+            evt.preventDefault();  // 防止 Windows 菜单栏被 Alt 聚焦
+            if (!evt.repeat) this._modTapCandidate = 'open';
+            return;
+        }
+        if (key === 'control') {
+            if (!evt.repeat) this._modTapCandidate = 'close';
+            return;  // 不 preventDefault，保留系统组合键（如 Ctrl+C 复制）
+        }
+        if (this._modTapCandidate && (evt.altKey || evt.ctrlKey || evt.metaKey)) {
+            this._modTapCandidate = null;  // 组合键：取消候选，事件继续正常流转
+        }
+
+        // 已进入操作模式：字母执行 / ESC 取消 / 其他键取消并继续正常处理
+        if (this.keyMode) {
+            if (/^[a-z]$/.test(key) && !evt.ctrlKey && !evt.altKey && !evt.metaKey && !evt.shiftKey) {
+                evt.preventDefault();
+                const item = (this.selectableItems || []).find(i => i.letter === key);
+                const mode = this.keyMode;
+                this.setKeyMode(null);
+                if (item) {
+                    if (mode === 'open') {
+                        this.activateItem(item);
+                    } else if (item.type === 'open') {
+                        this.closeTab(item);
+                    }
+                }
+                return;
+            }
+            if (key === 'escape') {
+                evt.preventDefault();
+                this.setKeyMode(null);
+                return;
+            }
+            this.setKeyMode(null);  // 其他键：取消模式，按普通键继续处理
+        }
+
         // ESC：关闭模态框
         if (key === 'escape') {
             evt.preventDefault();
@@ -3317,27 +3364,39 @@ class TabNavigatorModal extends obsidian.Modal {
             return;
         }
 
-        // Ctrl/Cmd + 字母：关闭对应标签
-        if ((evt.ctrlKey || evt.metaKey) && /^[a-z]$/.test(key)) {
-            evt.preventDefault();
-            const item = (this.selectableItems || []).find(i => i.letter === key);
-            if (item && item.type === 'open') {
-                this.closeTab(item);
-            }
-            return;
-        }
-
-        // Alt + 字母：直接切换对应标签（修复：纯字母不再劫持搜索框，
-        // 英文搜索可正常输入首字母；切换标签需 Alt 前导键）
-        if (evt.altKey && !evt.ctrlKey && !evt.metaKey && /^[a-z]$/.test(key)) {
-            evt.preventDefault();
-            const item = (this.selectableItems || []).find(i => i.letter === key);
-            if (item) {
-                this.activateItem(item);
-            }
-            return;
-        }
         // 纯字母：不拦截，默认行为输入到搜索框
+    }
+
+    // keyup：确认修饰键"点按"（按下后未夹带其他键），进入/退出对应操作模式
+    onKeyup(evt) {
+        const key = evt.key.toLowerCase();
+        if ((key === 'alt' || key === 'control') && this._modTapCandidate) {
+            const mode = this._modTapCandidate;
+            this._modTapCandidate = null;
+            // 再次点按同一修饰键 = 退出模式（开关式）
+            this.setKeyMode(this.keyMode === mode ? null : mode);
+        }
+    }
+
+    // 切换操作模式并更新底部提示
+    setKeyMode(mode) {
+        this.keyMode = mode;
+        this.updateKeyModeIndicator();
+    }
+
+    updateKeyModeIndicator() {
+        if (!this.hintEl) return;
+        const lang = this.getLang();
+        if (this.keyMode === 'open') {
+            this.hintEl.textContent = t('tabNavigatorModeOpen', lang);
+            this.hintEl.addClass('tab-navigator-mode-armed');
+        } else if (this.keyMode === 'close') {
+            this.hintEl.textContent = t('tabNavigatorModeClose', lang);
+            this.hintEl.addClass('tab-navigator-mode-armed');
+        } else {
+            this.hintEl.textContent = t('tabNavigatorHint', lang);
+            this.hintEl.removeClass('tab-navigator-mode-armed');
+        }
     }
 
     // 移动选中项
