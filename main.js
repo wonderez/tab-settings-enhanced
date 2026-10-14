@@ -715,39 +715,46 @@ class TabSettingsEnhancedPlugin extends obsidian.Plugin {
             .workspace-tab-header[data-tab-color] {
                 position: relative;
             }
-            /* 下划线：scaleX 缩放实现（transform-origin:center 保证向两侧对称生长），
-               弹簧缓动带回弹 */
-            .workspace-tab-header[data-tab-color]::after {
-                content: '';
+            /* 下划线：插件自注入的独立子元素（不占用 ::after/::before，
+               彻底避开与 Obsidian 原生伪元素规则的同优先级冲突）。
+               视觉层级：激活 > hover > 未激活；scaleX + origin:center 向两侧对称生长，
+               cubic-bezier(0.34,1.56,0.64,1) 为带回弹的弹簧曲线 */
+            body .workspace-tab-header[data-tab-color] .tse-tab-underline {
                 position: absolute;
                 bottom: 0;
                 left: 0;
                 right: 0;
-                height: 2px;                       /* 未激活：低 */
+                height: 2px;                          /* 未激活：最矮 */
                 background-color: var(--tab-bg-color);
-                opacity: var(--tab-bg-opacity, 0.3);  /* 未激活弱化，透明度随设置 */
-                transform: scaleX(0.2);            /* 未激活：宽 1/5 */
+                opacity: var(--tab-bg-opacity, 0.3);  /* 未激活：最淡 */
+                transform: scaleX(0.2);               /* 未激活：宽 1/5 */
                 transform-origin: center;
                 border-radius: 3px 3px 0 0;
                 pointer-events: none;
+                z-index: 2;
                 transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1),
                             height 0.4s cubic-bezier(0.34, 1.56, 0.64, 1),
-                            opacity 0.2s ease;
+                            opacity 0.25s ease;
             }
-            .workspace-tab-header[data-tab-color]:hover::after {
-                height: 3px;                       /* hover：高度增加 */
+            body .workspace-tab-header[data-tab-color]:hover .tse-tab-underline {
+                height: 3px;                          /* hover：高度居中 */
+                opacity: 0.8;                         /* hover：醒目 */
+                transform: scaleX(0.4);               /* hover：宽度居中 */
             }
-            .workspace-tab-header[data-tab-color].is-active::after {
-                transform: scaleX(0.6);            /* 激活：宽 60% 居中 */
-                height: 4px;                       /* 激活：最高 */
-                opacity: 1;
+            body .workspace-tab-header[data-tab-color].is-active .tse-tab-underline {
+                height: 4px;                          /* 激活：最高 */
+                opacity: 1;                           /* 激活：最实 */
+                transform: scaleX(0.6);               /* 激活：宽 60% 居中 */
             }
-            /* 打开已打开的标签：屏蔽原生黄色闪烁背景，改为下划线脉冲（60%→100%→60%） */
-            .workspace-tab-header[data-tab-color].is-flashing,
-            .workspace-tab-header[data-tab-color].is-flashing .workspace-tab-header-inner {
+            /* 打开已打开的标签：屏蔽原生黄色闪烁，改为下划线脉冲（60%→100%→60%） */
+            body .workspace-tab-header.is-flashing,
+            body .workspace-tab-header.is-flashing .workspace-tab-header-inner,
+            body .workspace-tab-header.is-flashing::after,
+            body .workspace-tab-header.is-flashing::before {
                 animation: none !important;
+                background-color: transparent !important;
             }
-            .workspace-tab-header[data-tab-color].tse-flash::after {
+            body .workspace-tab-header.tse-flash .tse-tab-underline {
                 animation: tse-underline-pulse 0.7s cubic-bezier(0.34, 1.56, 0.64, 1);
             }
             @keyframes tse-underline-pulse {
@@ -949,6 +956,8 @@ class TabSettingsEnhancedPlugin extends obsidian.Plugin {
                 pointer-events: none;
             }
         `;
+        const oldStyle = document.getElementById('tab-settings-enhanced-styles');
+        if (oldStyle) oldStyle.remove();  // 热重载防规则叠加
         document.head.appendChild(styleEl);
         
         this.register(() => {
@@ -1024,12 +1033,19 @@ class TabSettingsEnhancedPlugin extends obsidian.Plugin {
                 header.setAttribute('data-tab-color', 'true');
                 header.style.setProperty('--tab-bg-color', color);
                 header.style.setProperty('--tab-bg-opacity', this.settings.colorOpacity.toString());
-                // 底部颜色条由 CSS ::after 渲染（修复：原 inline border-bottom 与 ::after 双重重叠）
+                // 下划线用独立子元素（不占用原生伪元素，避免样式冲突）
+                if (!header.querySelector(':scope > .tse-tab-underline')) {
+                    const underline = document.createElement('div');
+                    underline.className = 'tse-tab-underline';
+                    header.appendChild(underline);
+                }
             } else {
                 header.removeAttribute('data-tab-color');
                 header.style.removeProperty('--tab-bg-color');
                 header.style.removeProperty('--tab-bg-opacity');
                 header.style.removeProperty('border-bottom');
+                const underline = header.querySelector(':scope > .tse-tab-underline');
+                if (underline) underline.remove();
             }
         });
     }
@@ -1049,6 +1065,9 @@ class TabSettingsEnhancedPlugin extends obsidian.Plugin {
                 header.style.removeProperty('--tab-bg-color');
                 header.style.removeProperty('--tab-bg-opacity');
                 header.style.removeProperty('border-bottom');
+                header.classList.remove('tse-flash');
+                const underline = header.querySelector(':scope > .tse-tab-underline');
+                if (underline) underline.remove();
             }
         });
     }
@@ -1056,8 +1075,9 @@ class TabSettingsEnhancedPlugin extends obsidian.Plugin {
     // 打开已打开的标签时：目标标签下划线脉冲（60%→100%→60%），替代原生黄色闪烁
     flashTabUnderline(leaf) {
         const header = leaf && leaf.tabHeaderEl;
-        if (!header || !header.hasAttribute('data-tab-color')) return;
+        if (!header) return;
         setTimeout(() => {
+            if (!header.querySelector(':scope > .tse-tab-underline')) return;
             header.classList.remove('tse-flash');
             void header.offsetWidth;  // 强制 reflow，允许连续触发重启动画
             header.classList.add('tse-flash');
@@ -1359,10 +1379,15 @@ class TabSettingsEnhancedPlugin extends obsidian.Plugin {
                 const existingLeaf = plugin.findExistingLeaf(resolvedPath);
                 if (existingLeaf) {
                     // 文件已打开，激活现有标签
-                    // 修复1: 先 revealLeaf 确保标签可见（处理标签在折叠/隐藏 split 的情况）
-                    plugin.app.workspace.revealLeaf(existingLeaf);
-                    // 修复2: 设置焦点激活
-                    plugin.app.workspace.setActiveLeaf(existingLeaf, { focus: true });
+                    // 仅在标签不可见（折叠/隐藏的 split）时才 revealLeaf——
+                    // revealLeaf 会触发原生黄色闪烁背景；可见时 setActiveLeaf 即可
+                    const hdr = existingLeaf.tabHeaderEl;
+                    if (hdr && hdr.offsetParent !== null) {
+                        plugin.app.workspace.setActiveLeaf(existingLeaf, { focus: true });
+                    } else {
+                        plugin.app.workspace.revealLeaf(existingLeaf);
+                        plugin.app.workspace.setActiveLeaf(existingLeaf, { focus: true });
+                    }
                     // 修复3: 应用 openViewState 中的 eState（如 Dataview 传递的行号/光标位置），
                     //        否则标签虽切换但不会跳转到具体任务行
                     if (openViewState && openViewState.eState) {
@@ -1423,9 +1448,14 @@ class TabSettingsEnhancedPlugin extends obsidian.Plugin {
                         // stopImmediatePropagation: 两个 document 捕获监听器（本处理器 + 面板链接处理器）
                         // 同节点上 stopPropagation 无法阻止后者，会导致同一文件被打开两次
                         evt.stopImmediatePropagation();
-                        // 修复: 先 revealLeaf 确保标签可见
-                        plugin.app.workspace.revealLeaf(existingLeaf);
-                        plugin.app.workspace.setActiveLeaf(existingLeaf, { focus: true });
+                        // 仅在标签不可见时才 revealLeaf（revealLeaf 会触发原生黄色闪烁）
+                        const hdr = existingLeaf.tabHeaderEl;
+                        if (hdr && hdr.offsetParent !== null) {
+                            plugin.app.workspace.setActiveLeaf(existingLeaf, { focus: true });
+                        } else {
+                            plugin.app.workspace.revealLeaf(existingLeaf);
+                            plugin.app.workspace.setActiveLeaf(existingLeaf, { focus: true });
+                        }
                         plugin.flashTabUnderline(existingLeaf);  // 下划线脉冲替代黄色闪烁
                         console.log("Tab Settings Enhanced: 已激活现有标签 -", resolvedPath);
                         return;

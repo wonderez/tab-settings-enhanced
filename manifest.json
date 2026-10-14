@@ -1,7 +1,7 @@
 {
     "id": "tab-settings-enhanced",
     "name": "Tab Settings Enhanced",
-    "version": "1.6.4",
+    "version": "1.6.5",
     "minAppVersion": "1.4.0",
     "description": "Enhanced tab management: control where new tabs open, tab navigator with search/history, and parent-relative positioning.",
     "author": "CTA System",
