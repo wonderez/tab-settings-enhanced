@@ -715,23 +715,45 @@ class TabSettingsEnhancedPlugin extends obsidian.Plugin {
             .workspace-tab-header[data-tab-color] {
                 position: relative;
             }
+            /* 下划线：scaleX 缩放实现（transform-origin:center 保证向两侧对称生长），
+               弹簧缓动带回弹 */
             .workspace-tab-header[data-tab-color]::after {
                 content: '';
                 position: absolute;
                 bottom: 0;
-                left: 50%;
-                transform: translateX(-50%);
-                width: 20%;          /* 未激活：占标签宽 1/5 */
-                height: 3px;
+                left: 0;
+                right: 0;
+                height: 2px;                       /* 未激活：低 */
                 background-color: var(--tab-bg-color);
                 opacity: var(--tab-bg-opacity, 0.3);  /* 未激活弱化，透明度随设置 */
+                transform: scaleX(0.2);            /* 未激活：宽 1/5 */
+                transform-origin: center;
                 border-radius: 3px 3px 0 0;
                 pointer-events: none;
-                transition: width 0.15s ease, opacity 0.15s ease;
+                transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1),
+                            height 0.4s cubic-bezier(0.34, 1.56, 0.64, 1),
+                            opacity 0.2s ease;
+            }
+            .workspace-tab-header[data-tab-color]:hover::after {
+                height: 3px;                       /* hover：高度增加 */
             }
             .workspace-tab-header[data-tab-color].is-active::after {
-                width: 33.33%;       /* 激活：占标签宽 1/3 */
+                transform: scaleX(0.6);            /* 激活：宽 60% 居中 */
+                height: 4px;                       /* 激活：最高 */
                 opacity: 1;
+            }
+            /* 打开已打开的标签：屏蔽原生黄色闪烁背景，改为下划线脉冲（60%→100%→60%） */
+            .workspace-tab-header[data-tab-color].is-flashing,
+            .workspace-tab-header[data-tab-color].is-flashing .workspace-tab-header-inner {
+                animation: none !important;
+            }
+            .workspace-tab-header[data-tab-color].tse-flash::after {
+                animation: tse-underline-pulse 0.7s cubic-bezier(0.34, 1.56, 0.64, 1);
+            }
+            @keyframes tse-underline-pulse {
+                0%   { transform: scaleX(0.6); }
+                45%  { transform: scaleX(1); }
+                100% { transform: scaleX(0.6); }
             }
             
             /* 标签导航器模态框样式 */
@@ -1029,6 +1051,18 @@ class TabSettingsEnhancedPlugin extends obsidian.Plugin {
                 header.style.removeProperty('border-bottom');
             }
         });
+    }
+
+    // 打开已打开的标签时：目标标签下划线脉冲（60%→100%→60%），替代原生黄色闪烁
+    flashTabUnderline(leaf) {
+        const header = leaf && leaf.tabHeaderEl;
+        if (!header || !header.hasAttribute('data-tab-color')) return;
+        setTimeout(() => {
+            header.classList.remove('tse-flash');
+            void header.offsetWidth;  // 强制 reflow，允许连续触发重启动画
+            header.classList.add('tse-flash');
+            setTimeout(() => header.classList.remove('tse-flash'), 800);
+        }, 50);  // 等 is-active 类先就位，脉冲从激活宽度起跳
     }
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -1334,6 +1368,7 @@ class TabSettingsEnhancedPlugin extends obsidian.Plugin {
                     if (openViewState && openViewState.eState) {
                         existingLeaf.setEphemeralState(openViewState.eState);
                     }
+                    plugin.flashTabUnderline(existingLeaf);  // 下划线脉冲替代黄色闪烁
                     console.log("Tab Settings Enhanced: 已激活现有标签 -", resolvedPath);
                     return;
                 }
@@ -1391,6 +1426,7 @@ class TabSettingsEnhancedPlugin extends obsidian.Plugin {
                         // 修复: 先 revealLeaf 确保标签可见
                         plugin.app.workspace.revealLeaf(existingLeaf);
                         plugin.app.workspace.setActiveLeaf(existingLeaf, { focus: true });
+                        plugin.flashTabUnderline(existingLeaf);  // 下划线脉冲替代黄色闪烁
                         console.log("Tab Settings Enhanced: 已激活现有标签 -", resolvedPath);
                         return;
                     }
