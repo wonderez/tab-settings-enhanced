@@ -732,7 +732,7 @@ class TabSettingsEnhancedPlugin extends obsidian.Plugin {
             body .workspace-tab-header .tse-tab-underline {
                 position: absolute;
                 bottom: 0;
-                left: 0;
+                left: 3px;                           /* 左对齐后右移 3px */
                 right: 0;
                 height: 1px;                          /* 未激活：最细 */
                 background-color: var(--tab-bg-color, var(--text-faint));  /* 无层级关系=灰色 */
