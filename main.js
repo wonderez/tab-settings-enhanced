@@ -724,25 +724,25 @@ class TabSettingsEnhancedPlugin extends obsidian.Plugin {
                 bottom: 0;
                 left: 0;
                 right: 0;
-                height: 2px;                          /* 未激活：最矮 */
+                height: 1px;                          /* 未激活：最细 */
                 background-color: var(--tab-bg-color);
                 opacity: var(--tab-bg-opacity, 0.3);  /* 未激活：最淡 */
                 transform: scaleX(0.2);               /* 未激活：宽 1/5 */
                 transform-origin: center;
-                border-radius: 3px 3px 0 0;
+                border-radius: 2px 2px 0 0;
                 pointer-events: none;
                 z-index: 2;
-                transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1),
-                            height 0.4s cubic-bezier(0.34, 1.56, 0.64, 1),
-                            opacity 0.25s ease;
+                transition: transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1),
+                            height 0.18s cubic-bezier(0.34, 1.56, 0.64, 1),
+                            opacity 0.12s ease;
             }
             body .workspace-tab-header[data-tab-color]:hover .tse-tab-underline {
-                height: 3px;                          /* hover：高度居中 */
+                height: 2px;                          /* hover：加粗 */
                 opacity: 0.8;                         /* hover：醒目 */
                 transform: scaleX(0.4);               /* hover：宽度居中 */
             }
             body .workspace-tab-header[data-tab-color].is-active .tse-tab-underline {
-                height: 4px;                          /* 激活：最高 */
+                height: 2px;                          /* 激活：与 hover 同粗 */
                 opacity: 1;                           /* 激活：最实 */
                 transform: scaleX(0.6);               /* 激活：宽 60% 居中 */
             }
@@ -755,7 +755,7 @@ class TabSettingsEnhancedPlugin extends obsidian.Plugin {
                 background-color: transparent !important;
             }
             body .workspace-tab-header.tse-flash .tse-tab-underline {
-                animation: tse-underline-pulse 0.7s cubic-bezier(0.34, 1.56, 0.64, 1);
+                animation: tse-underline-pulse 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
             }
             @keyframes tse-underline-pulse {
                 0%   { transform: scaleX(0.6); }
@@ -1081,7 +1081,7 @@ class TabSettingsEnhancedPlugin extends obsidian.Plugin {
             header.classList.remove('tse-flash');
             void header.offsetWidth;  // 强制 reflow，允许连续触发重启动画
             header.classList.add('tse-flash');
-            setTimeout(() => header.classList.remove('tse-flash'), 800);
+            setTimeout(() => header.classList.remove('tse-flash'), 420);
         }, 50);  // 等 is-active 类先就位，脉冲从激活宽度起跳
     }
 
