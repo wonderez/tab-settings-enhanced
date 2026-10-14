@@ -748,6 +748,9 @@ class TabSettingsEnhancedPlugin extends obsidian.Plugin {
                 flex-direction: column;
                 overflow: hidden;
             }
+            .tab-navigator-modal:focus {
+                outline: none;  /* 操作模式下模态框承接焦点，不显示聚焦框 */
+            }
             .tab-navigator-body {
                 display: flex;
                 flex: 1;
@@ -2583,11 +2586,17 @@ class TabNavigatorModal extends obsidian.Modal {
             }
         });
         
-        // 键盘事件（在捕获阶段处理，优先于输入框默认行为）
+        // 键盘事件挂在 modalEl（捕获阶段）：操作模式下搜索框会失焦，挂在搜索框上将收不到按键
+        modalEl.tabIndex = -1;  // 使模态框可聚焦（操作模式下承接焦点，绕开输入法）
         this.keydownHandler = (evt) => this.onKeydown(evt);
-        this.searchInput.addEventListener('keydown', this.keydownHandler, true);
+        modalEl.addEventListener('keydown', this.keydownHandler, true);
         this.keyupHandler = (evt) => this.onKeyup(evt);
-        this.searchInput.addEventListener('keyup', this.keyupHandler, true);
+        modalEl.addEventListener('keyup', this.keyupHandler, true);
+
+        // 操作模式下点回搜索框 = 用户想打字搜索，自动退出模式
+        this.searchInput.addEventListener('focus', () => {
+            if (this.keyMode) this.setKeyMode(null);
+        });
         
         // 监听工作区变化，自动刷新列表（标签打开/关闭/切换时）
         this.layoutChangeHandler = () => {
@@ -2617,11 +2626,11 @@ class TabNavigatorModal extends obsidian.Modal {
 
     onClose() {
         const { contentEl } = this;
-        if (this.keydownHandler && this.searchInput) {
-            this.searchInput.removeEventListener('keydown', this.keydownHandler, true);
+        if (this.keydownHandler && this.modalEl) {
+            this.modalEl.removeEventListener('keydown', this.keydownHandler, true);
         }
-        if (this.keyupHandler && this.searchInput) {
-            this.searchInput.removeEventListener('keyup', this.keyupHandler, true);
+        if (this.keyupHandler && this.modalEl) {
+            this.modalEl.removeEventListener('keyup', this.keyupHandler, true);
         }
         // 清理工作区事件监听
         if (this.layoutChangeHandler) {
@@ -3382,6 +3391,17 @@ class TabNavigatorModal extends obsidian.Modal {
     setKeyMode(mode) {
         this.keyMode = mode;
         this.updateKeyModeIndicator();
+        // 焦点管理（本功能核心）：进入模式时把焦点移出搜索框——没有文本输入上下文，
+        // 拼音输入法不会介入，字母键以原始 key 直达，无需手动切换输入法；
+        // 退出模式时焦点还回搜索框，恢复正常输入（IME 重新生效）
+        if (mode) {
+            if (this.searchInput) this.searchInput.blur();
+            if (this.modalEl) this.modalEl.focus();
+        } else {
+            if (this.searchInput && this.modalEl && this.modalEl.isShown) {
+                this.searchInput.focus();
+            }
+        }
     }
 
     updateKeyModeIndicator() {
