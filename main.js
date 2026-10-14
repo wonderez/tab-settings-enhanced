@@ -738,7 +738,7 @@ class TabSettingsEnhancedPlugin extends obsidian.Plugin {
                 background-color: var(--tab-bg-color, var(--text-faint));  /* 无层级关系=灰色 */
                 opacity: var(--tab-bg-opacity, 0.3);  /* 未激活：最淡 */
                 transform: scaleX(0.1);               /* 未激活：宽 1/10 */
-                transform-origin: center;
+                transform-origin: left center;      /* 左对齐，向右生长 */
                 border-radius: 2px 2px 0 0;
                 pointer-events: none;
                 z-index: 2;
@@ -755,6 +755,16 @@ class TabSettingsEnhancedPlugin extends obsidian.Plugin {
                 height: 2px;                          /* 激活：与 hover 同粗 */
                 opacity: 1;                           /* 激活：最实 */
                 transform: scaleX(0.3);               /* 激活：宽 3/10 */
+            }
+            /* 灰色兜底标签（无层级关系）单独给一套更清晰的透明度层级 */
+            body .workspace-tab-header:not([data-tab-color]) .tse-tab-underline {
+                opacity: 0.45;                        /* 未激活 */
+            }
+            body .workspace-tab-header:not([data-tab-color]):hover .tse-tab-underline {
+                opacity: 0.85;                        /* hover */
+            }
+            body .workspace-tab-header:not([data-tab-color]).is-active .tse-tab-underline {
+                opacity: 1;                           /* 激活 */
             }
             /* 打开已打开的标签：屏蔽原生黄色闪烁，改为下划线脉冲（60%→100%→60%） */
             body .workspace-tab-header.is-flashing,
