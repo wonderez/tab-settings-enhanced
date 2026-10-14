@@ -779,7 +779,7 @@ class TabSettingsEnhancedPlugin extends obsidian.Plugin {
             }
             @keyframes tse-underline-pulse {
                 0%   { transform: scaleX(0.3); }
-                45%  { transform: scaleX(1); }
+                45%  { transform: scaleX(0.9); }
                 100% { transform: scaleX(0.3); }
             }
             
