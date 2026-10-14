@@ -590,6 +590,16 @@ class TabSettingsEnhancedPlugin extends obsidian.Plugin {
                 }
             });
             
+            // 点击标签头激活：下划线先扩到 100% 再回落到激活宽度
+            if (this.settings.enableTabColors) {
+                this.registerDomEvent(document, 'click', (evt) => {
+                    const target = evt.target;
+                    const header = target && target.closest ? target.closest('.workspace-tab-header') : null;
+                    if (!header) return;
+                    this.flashTabUnderline({ tabHeaderEl: header });
+                }, true);
+            }
+
             // 注册样式
             this.registerStyles();
             
@@ -719,15 +729,15 @@ class TabSettingsEnhancedPlugin extends obsidian.Plugin {
                彻底避开与 Obsidian 原生伪元素规则的同优先级冲突）。
                视觉层级：激活 > hover > 未激活；scaleX + origin:center 向两侧对称生长，
                cubic-bezier(0.34,1.56,0.64,1) 为带回弹的弹簧曲线 */
-            body .workspace-tab-header[data-tab-color] .tse-tab-underline {
+            body .workspace-tab-header .tse-tab-underline {
                 position: absolute;
                 bottom: 0;
                 left: 0;
                 right: 0;
                 height: 1px;                          /* 未激活：最细 */
-                background-color: var(--tab-bg-color);
+                background-color: var(--tab-bg-color, var(--text-faint));  /* 无层级关系=灰色 */
                 opacity: var(--tab-bg-opacity, 0.3);  /* 未激活：最淡 */
-                transform: scaleX(0.2);               /* 未激活：宽 1/5 */
+                transform: scaleX(0.1);               /* 未激活：宽 1/10 */
                 transform-origin: center;
                 border-radius: 2px 2px 0 0;
                 pointer-events: none;
@@ -736,15 +746,15 @@ class TabSettingsEnhancedPlugin extends obsidian.Plugin {
                             height 0.18s cubic-bezier(0.34, 1.56, 0.64, 1),
                             opacity 0.12s ease;
             }
-            body .workspace-tab-header[data-tab-color]:hover .tse-tab-underline {
+            body .workspace-tab-header:hover .tse-tab-underline {
                 height: 2px;                          /* hover：加粗 */
                 opacity: 0.8;                         /* hover：醒目 */
-                transform: scaleX(0.4);               /* hover：宽度居中 */
+                transform: scaleX(0.2);               /* hover：宽 1/5 */
             }
-            body .workspace-tab-header[data-tab-color].is-active .tse-tab-underline {
+            body .workspace-tab-header.is-active .tse-tab-underline {
                 height: 2px;                          /* 激活：与 hover 同粗 */
                 opacity: 1;                           /* 激活：最实 */
-                transform: scaleX(0.6);               /* 激活：宽 60% 居中 */
+                transform: scaleX(0.3);               /* 激活：宽 3/10 */
             }
             /* 打开已打开的标签：屏蔽原生黄色闪烁，改为下划线脉冲（60%→100%→60%） */
             body .workspace-tab-header.is-flashing,
@@ -758,9 +768,9 @@ class TabSettingsEnhancedPlugin extends obsidian.Plugin {
                 animation: tse-underline-pulse 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
             }
             @keyframes tse-underline-pulse {
-                0%   { transform: scaleX(0.6); }
+                0%   { transform: scaleX(0.3); }
                 45%  { transform: scaleX(1); }
-                100% { transform: scaleX(0.6); }
+                100% { transform: scaleX(0.3); }
             }
             
             /* 标签导航器模态框样式 */
@@ -1040,12 +1050,16 @@ class TabSettingsEnhancedPlugin extends obsidian.Plugin {
                     header.appendChild(underline);
                 }
             } else {
+                // 无层级关系：同样保留下划线，颜色走灰色兜底（var(--text-faint)）
                 header.removeAttribute('data-tab-color');
                 header.style.removeProperty('--tab-bg-color');
                 header.style.removeProperty('--tab-bg-opacity');
                 header.style.removeProperty('border-bottom');
-                const underline = header.querySelector(':scope > .tse-tab-underline');
-                if (underline) underline.remove();
+                if (!header.querySelector(':scope > .tse-tab-underline')) {
+                    const underline = document.createElement('div');
+                    underline.className = 'tse-tab-underline';
+                    header.appendChild(underline);
+                }
             }
         });
     }
