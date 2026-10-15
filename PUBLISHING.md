@@ -18,6 +18,18 @@
 当前流程：**发布 GitHub Release → 在 community.obsidian.md 网页提交 → 自动审核**。
 本手册第二章已按此更新，第三章的旧 PR 内容仅作历史参考。
 
+### 三个最常见的提交失败原因
+
+| 审核报错 | 原因 | 解决 |
+|---|---|---|
+| `No release matches your manifest version` | Release 的 tag 带 `v` 前缀（`v1.6.11`），目录做精确匹配不认 | tag 必须是 `1.6.11`，无 `v` |
+| `Repository not found` / 无法读取 | Connect GitHub 时授权了非仓库所有者账号 | 侧栏 GitHub → Disconnect → 用 `wonderez` 重新 Connect |
+| id 冲突 / 名称重复 | `manifest.json` 的 `id` 已被其他插件占用 | 换 id（本项目 `tab-settings-enhanced` 已确认未占用） |
+
+> ⚠️ 关于 tag 前缀：部分旧版 Obsidian 文档写"tag 建议带 `v` 前缀"，但当前
+> community.obsidian.md 的审核做**精确匹配**，`v1.6.11` 不等于 `1.6.11`。
+> 以审核报错为准，无 `v`。
+
 ---
 
 ## 一、发布前检查清单
@@ -31,7 +43,7 @@
 | 3 | `README.md` | 功能说明、安装方式、使用说明齐全（目录页会展示节选） | ✅ 已重写 |
 | 4 | `main.js` 可读 | 不得压缩/混淆（审核要能读懂代码） | ✅ 纯手写未压缩 |
 | 5 | `version` 为 `x.y.z` | 只支持语义化三段式 | ✅ `1.6.11` |
-| 6 | Release tag 一致 | tag 必须是 `v` + manifest version | ✅ `v1.6.11` |
+| 6 | **Release tag 无 `v` 前缀** | tag 必须**精确等于** version（`1.6.11`，不是 `v1.6.11`） | ✅ `1.6.11` |
 | 7 | **Release 附件** | 必须上传 `main.js` + `manifest.json` 为二进制附件 | ✅ 已上传 |
 | 8 | GitHub 公开仓库 | Public，非 fork | ✅ 已创建 |
 
@@ -61,19 +73,23 @@ git push origin --tags
 
 ### Step 2 — 创建 GitHub Release 并上传附件（✅ 已完成）
 
-Release `v1.6.11` 已发布（非 draft），附件已上传 `main.js` + `manifest.json`。
+Release `1.6.11` 已发布（非 draft），附件已上传 `main.js` + `manifest.json`。
 
 后续版本用命令行一步完成：
 
 ```bash
 GH="/c/Program Files/GitHub CLI/gh.exe"
-git tag v1.7.0 && git push origin v1.7.0
-"$GH" release create v1.7.0 --title "1.7.0" --notes-file release-notes.md
-"$GH" release upload v1.7.0 main.js manifest.json
+git tag 1.7.0 && git push origin 1.7.0
+"$GH" release create 1.7.0 --title "1.7.0" --notes-file release-notes.md
+"$GH" release upload 1.7.0 main.js manifest.json
 ```
 
 > ⚠️ 必须 Publish（正式发布），Draft / Pre-release 不会被目录识别。
 > ⚠️ **附件不能省**：用户安装时从 Release 下载 `main.js` 和 `manifest.json`。
+> ⚠️ **tag 不能带 `v` 前缀**。官方审核报 `No release matches your manifest version`
+> 就是这个原因——目录做的是精确匹配，`v1.6.11` ≠ `1.6.11`。官方 sample-plugin 与
+> Dataview 等上架插件的 tag 均无 `v` 前缀。**注意**：部分旧文档写的是"v 前缀"，
+> 以审核报错为准。
 
 ### Step 3 — 在 community.obsidian.md 提交（⬜ 待你操作）
 
@@ -113,7 +129,7 @@ git tag v1.7.0 && git push origin v1.7.0
 | 没有 LICENSE | MIT 已就位 |
 | manifest 缺 `authorUrl` | 已补 |
 | version 不是 x.y.z 三段式 | `1.6.11` ✅ |
-| release tag 与 manifest version 不一致 | `v1.6.11` 一致 |
+| release tag 带 `v` 前缀或不匹配 | `1.6.11`，精确等于 manifest version |
 | Release 未上传 main.js 附件 | 已上传 |
 | manifest 在默认分支 HEAD 不准确 | 已提交推送 |
 | main.js 压缩混淆 | 纯手写、未压缩 |
@@ -134,16 +150,16 @@ git tag v1.7.0 && git push origin v1.7.0
 node --check main.js
 
 # 2. 升版本号：编辑 manifest.json 的 "version"
-# 3. 提交并打 tag（tag 必须与 version 完全一致，带 v 前缀）
+# 3. 提交并打 tag（tag 必须与 version 完全一致，且不带 v 前缀）
 git add main.js manifest.json
 git commit -m "v1.7.0: <本版摘要>"
-git tag v1.7.0
+git tag 1.7.0
 git push origin main --tags
 
 # 4. 发 Release 并上传附件
 GH="/c/Program Files/GitHub CLI/gh.exe"
-"$GH" release create v1.7.0 --title "1.7.0" --notes-file release-notes.md
-"$GH" release upload v1.7.0 main.js manifest.json
+"$GH" release create 1.7.0 --title "1.7.0" --notes-file release-notes.md
+"$GH" release upload 1.7.0 main.js manifest.json
 ```
 
 > ⚠️ `versions.json` 需同步新增 `"1.7.0": "1.4.0"` 条目——当用户运行的 Obsidian
