@@ -1,5 +1,6 @@
-# 个人使用：data.json 纳入版本管理（保留自己的设置/历史）
-# .gitignore 目前为空占位
+# 用户运行时数据：含真实笔记路径/关闭历史/归档记录，严禁入库（公开仓库会泄露隐私）
+data.json
+data.json.pre-release-backup
 
 # WorkBuddy 内部数据
 .workbuddy/

@@ -2,12 +2,16 @@
 
 > Enhanced tab management for Obsidian: control where new tabs open, navigate tabs with a keyboard-driven navigator, and colorize parent-child tab relationships.
 
-**Tab Settings Enhanced** 是一款 Obsidian 标签管理增强插件，提供精细化的新标签打开位置控制、关闭后激活策略、防重复标签、父子标签颜色标记，以及一个类似浏览器风格的「标签导航器」模态框（字母快捷切换 + 搜索 + 历史恢复）。
+[![Downloads](https://img.shields.io/badge/dynamic/json?logo=obsidian&color=%23483699&label=downloads&query=%24%5B%22tab-settings-enhanced%22%5D.downloads&url=https%3A%2F%2Fraw.githubusercontent.com%2Fobsidianmd%2Fobsidian-releases%2Fmaster%2Fcommunity-plugins.json)](https://obsidian.md/plugins?id=tab-settings-enhanced)
+![License](https://img.shields.io/badge/license-MIT-green)
 
-- 版本：1.2.2
-- 最低 Obsidian 版本：1.0.0
+**Tab Settings Enhanced** 是一款 Obsidian 标签管理增强插件，提供精细化的新标签打开位置控制、关闭后激活策略、防重复标签、父子标签颜色标记，以及一个键盘驱动的「标签导航器」模态框（序列快捷键切换 + 搜索 + 历史恢复）。
+
+- 版本：1.6.11
+- 最低 Obsidian 版本：1.4.0
 - 作者：CTA System
 - 平台：桌面端 & 移动端
+- 开源协议：MIT
 
 ---
 
@@ -66,6 +70,7 @@
   - 💡 霓虹 Neon
   - 🎲 随机 Random（动态生成，色相差 60° 以上）
 - **颜色透明度** (`colorOpacity`)：0 ~ 1，默认 0.3
+- **视觉呈现**：标签头下方绘制与父子关系同色的下划线（左对齐、向右生长），宽度按 未激活 10% / hover 20% / 激活 30% 递进，点击激活或去重激活时有弹簧脉冲反馈（30% → 90% → 30%）；未配置颜色的标签使用主题灰兜底，同样享受全套动画。
 
 ### 5. 标签导航器（Tab Navigator）
 
@@ -86,23 +91,24 @@
 │  🕒 最近关闭                                 │
 │  [k]  📄 已关闭的笔记1            ↩         │  ← 字母键 + 标题 + 恢复按钮
 └─────────────────────────────────────────────┘
-   字母键切换 | Ctrl+字母 关闭 | ↑↓ 选择 | Enter 确认 | ESC 退出
+   点按 Alt 进入打开模式 | 点按 Ctrl 进入关闭模式 | ↑↓ 选择 | Enter 确认 | ESC 退出
 ```
 
 #### 键盘交互
 
 | 按键 | 行为 |
 |---|---|
-| `a` ~ `z`（搜索框为空时） | 直接激活/恢复对应字母的标签 |
-| `Ctrl` + 字母 | 关闭对应字母的标签（仅打开的标签） |
+| 点按 `Alt` 后松开 | 进入「打开模式」（底部提示条高亮 `▶ 打开模式`） |
+| 点按 `Ctrl` 后松开 | 进入「关闭模式」（底部提示条高亮 `✕ 关闭模式`） |
+| 模式下按 `a` ~ `z` | 打开 / 关闭对应字母的标签 |
+| `Esc` | 取消当前模式（不关闭模态框）；无模式时关闭模态框 |
 | `↑` / `↓` | 上下移动选中项 |
 | `Enter` | 激活/恢复当前选中项 |
-| `Esc` | 关闭模态框 |
-| 任意可输入字符 | 输入到搜索框，实时过滤 |
+| 任意可输入字符 | 无模式下输入到搜索框，实时过滤 |
 
 #### 特性
 
-- **字母快捷键**：搜索框为空时，按字母直接切换；输入搜索词时，字母正常输入到搜索框。
+- **序列快捷键（点按前导键）**：先点按 `Alt`/`Ctrl` 进入打开/关闭模式，再按字母执行。采用「点按检测」而非组合键——`Alt+A`、`Ctrl+C` 等组合键原样放行，**不会劫持系统或全局快捷键**；进入模式后焦点自动移出搜索框，**拼音输入法下无需切换输入法**，字母键直达执行。
 - **实时搜索**：匹配文件名、完整路径、父文件夹名（不区分大小写）。
 - **历史恢复**：自动记录最近关闭的 30 条标签，可在「最近关闭」区域一键恢复。
 - **去重显示**：已打开的标签不会在历史区域重复出现。
@@ -176,15 +182,21 @@
 
 ## 📦 安装
 
-### 方式一：手动安装
+### 方式一：社区插件商店（推荐）
 
-1. 下载 `main.js`、`manifest.json`、`data.json`（可选）。
+1. 打开 **设置 → 第三方插件 → 社区插件市场 → 浏览**。
+2. 搜索 **Tab Settings Enhanced**，点击安装。
+3. 安装完成后，在已安装插件列表中点击启用。
+
+### 方式二：手动安装
+
+1. 下载 `main.js` 与 `manifest.json`（`data.json` 为插件运行时自动生成的用户数据，无需下载）。
 2. 在 Obsidian Vault 中创建目录：`.obsidian/plugins/tab-settings-enhanced/`
 3. 将下载的文件放入该目录。
 4. 在 Obsidian 中打开 **设置 → 第三方插件**，关闭「安全模式」。
 5. 在插件列表中找到 **Tab Settings Enhanced**，点击启用。
 
-### 方式二：从源码构建（开发者）
+### 方式三：从源码构建（开发者）
 
 ```bash
 git clone <your-repo-url>
@@ -244,7 +256,7 @@ npm run build   # 产出 main.js
 
 ## 🛠️ 实现原理简述
 
-- **打开行为拦截**：通过 `patchOpenLink()` 重写 `workspace.openLinkText`，根据 `newTabPlacement` 决定新标签插入位置，并通过 DOM 检测 `.quick-switcher-modal` 判断调用来源。
+- **打开行为拦截**：通过 `patchOpenLink()` 重写 `workspace.openLinkText`，根据 `newTabPlacement` 决定新标签插入位置，并通过 DOM 检测快速切换器模态框判断调用来源。
 - **关闭行为拦截**：通过 `patchLeafDetach()` 重写 `WorkspaceLeaf.prototype.detach`，在标签关闭前记录历史，并按 `closeTabActivation` 策略激活下一个标签。
 - **父子关系追踪**：维护父子标签映射，用于颜色分配与关闭后回到父标签。
 - **颜色分配**：从选定配色方案中按父子层级分配颜色，同色系标识父子关系。
@@ -268,15 +280,28 @@ npm run build   # 产出 main.js
 ```
 tab-settings-enhanced/
 ├── manifest.json            # Obsidian 插件清单
-├── main.js                  # 编译后的插件主文件（可直接安装使用）
-├── data.json                # 用户配置与历史记录（运行时生成）
+├── main.js                  # 插件主文件（可直接安装使用）
+├── LICENSE                  # MIT 开源协议
 ├── IMPLEMENTATION_PLAN.md   # 功能增强实现方案（设计文档）
 └── README.md                # 本文件
 ```
 
+> `data.json`（用户配置与历史记录）由插件运行时自动生成，含个人笔记路径，不纳入版本库。
+
 ---
 
 ## 📝 更新日志
+
+### v1.6.11
+
+- 标签颜色下划线宽度收窄为 10% / 20% / 30%（未激活 / hover / 激活），脉冲峰值 100% → 90%；无层级关系的标签增加灰色兜底下划线，同样享受 hover、激活与点击脉冲动画。
+
+### v1.6.1 ~ v1.6.10（概要）
+
+- **v1.6.1**：16 项 bug 修复——自动归档对「从未激活标签」失效、最近关闭历史不持久化、入链/出链面板点击同文件双开、parentMap 环保护、popout 浮动窗口误判、历史徽标滞后等。
+- **v1.6.2**：标签导航器改为「点按前导键」序列快捷键（点按 Alt=打开模式 / Ctrl=关闭模式），不再劫持 Alt+字母 等全局快捷键；下划线改为标题下方居中、弹簧动画、激活 60%。
+- **v1.6.3**：序列快捷键兼容拼音输入法——进入模式后焦点移出搜索框，IME 不介入，无需切换输入法。
+- **v1.6.4 ~ v1.6.10**：下划线视觉持续打磨——改用独立子元素避开原生伪元素冲突、去重激活「下划线脉冲」替代原生黄色闪烁、左对齐向右生长、高度/不透明度三档层级、左偏移 6px、峰值 90%。
 
 ### v1.6.0
 
@@ -324,10 +349,10 @@ tab-settings-enhanced/
 
 ## 💖 支持
 
-如果这个插件对你有帮助，欢迎在设置面板底部的「支持」区域给予反馈或捐赠。
+如果这个插件对你有帮助，欢迎在 [GitHub](https://github.com/wonderez/tab-settings-enhanced) 上点个 Star，或提交 Issue 反馈问题与建议。
 
 ---
 
 ## License
 
-本项目仅供个人/团队内部使用，未声明开源许可证。
+本项目基于 [MIT License](./LICENSE) 开源，Copyright (c) 2026 CTA System。
