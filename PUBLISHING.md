@@ -1,24 +1,39 @@
-# 发布到 Obsidian 社区插件商店 — 操作手册
+# 发布到 Obsidian 社区插件目录 — 操作手册
 
-> 本文件是插件上架 Obsidian 社区的完整操作指南。第一次发布按「第二章」逐步执行；
-> 之后的版本更新只需「第四章」四步，无需再次提交 PR。
+> 本文件是插件上架 Obsidian 社区目录的完整操作指南。第一次发布按「第二章」逐步执行；
+> 之后的版本更新只需「第四章」三步，无需再次提交审核。
+
+---
+
+## ⚠️ 重要：提交流程已变更（2026-10 核实）
+
+旧流程——fork `obsidianmd/obsidian-releases` 并提交 Pull Request——**已经失效**。
+
+核实证据：
+
+- `obsidianmd/obsidian-releases` 已关闭 Pull Request 与 Issue（API `has_issues: false`，
+  `/pulls` 接口返回 404，网页对比页无"创建"按钮）
+- 官方文档现要求提交到 **community.obsidian.md**，由自动化审核处理
+
+当前流程：**发布 GitHub Release → 在 community.obsidian.md 网页提交 → 自动审核**。
+本手册第二章已按此更新，第三章的旧 PR 内容仅作历史参考。
 
 ---
 
 ## 一、发布前检查清单
 
-Obsidian 官方仓库 `obsidianmd/obsidian-releases` 的审核是人工 + 机器人双重检查，以下每一项不过都会被驳回：
+以下每一项不过都会被自动审核标记为需要修正：
 
 | # | 检查项 | 要求 | 本仓库状态 |
 |---|---|---|---|
-| 1 | `manifest.json` 字段完整 | `id` / `name` / `version` / `minAppVersion` / `description` / `author` / `authorUrl` / `isDesktopOnly` | ✅ 已补齐 `authorUrl` |
-| 2 | 开源许可证 | 仓库根目录有 `LICENSE`（MIT 最常用） | ✅ MIT |
-| 3 | `README.md` | 功能说明、安装方式、使用说明齐全 | ✅ 已重写 |
-| 4 | `main.js` 可读 | 不得压缩/混淆（审核人要能读懂代码） | ✅ 纯手写未压缩 |
-| 5 | `version` 与 Release tag 一致 | 如 manifest 是 `1.6.11`，tag 必须是 `v1.6.11` | ⚠️ 发 release 时核对 |
-| 6 | 用户数据不入库 | `data.json`（含笔记路径/历史）不得进公开仓库 | ✅ 已移出并重写历史 |
-| 7 | 无硬编码隐私 | 代码中无个人路径、vault 名、密钥 | ⚠️ 推送前人工最终确认一次 |
-| 8 | GitHub 公开仓库 | Public，非 fork | ⬜ 待创建（见下） |
+| 1 | `manifest.json` 字段完整 | `id` / `name` / `version` / `minAppVersion` / `description` / `author` / `authorUrl` / `isDesktopOnly` | ✅ 含 `authorUrl`、`fundingUrl` |
+| 2 | 开源许可证 | 仓库根目录有 `LICENSE` | ✅ MIT |
+| 3 | `README.md` | 功能说明、安装方式、使用说明齐全（目录页会展示节选） | ✅ 已重写 |
+| 4 | `main.js` 可读 | 不得压缩/混淆（审核要能读懂代码） | ✅ 纯手写未压缩 |
+| 5 | `version` 为 `x.y.z` | 只支持语义化三段式 | ✅ `1.6.11` |
+| 6 | Release tag 一致 | tag 必须是 `v` + manifest version | ✅ `v1.6.11` |
+| 7 | **Release 附件** | 必须上传 `main.js` + `manifest.json` 为二进制附件 | ✅ 已上传 |
+| 8 | GitHub 公开仓库 | Public，非 fork | ✅ 已创建 |
 
 **隐私说明（重要）**：本仓库的 git 历史已经过重写，所有分支与 tag 中均不再包含
 `data.json`。本地保留了一份重写前的备份引用（`refs/original/*`），仅存在于本机，
@@ -26,95 +41,67 @@ Obsidian 官方仓库 `obsidianmd/obsidian-releases` 的审核是人工 + 机器
 
 ---
 
-## 二、第一次发布（共 6 步）
+## 二、第一次发布（共 3 步，代码部分已就绪）
 
-### Step 1 — 在 GitHub 创建公开仓库
+> 以下 Step 1–2 已于 2026-10-15 完成，此处保留作记录与后续版本复用。
 
-1. 打开 https://github.com/new
-2. **Repository name**: `tab-settings-enhanced`
-3. **Public**（社区插件必须是公开仓库）
-4. **不要**勾选 "Add a README file" / ".gitignore" / "license"（本地已有，避免冲突）
-5. 创建后，在本地关联远程仓库：
+### Step 1 — GitHub 公开仓库（✅ 已完成）
+
+仓库地址：https://github.com/wonderez/tab-settings-enhanced
 
 ```bash
-cd <插件本地目录>（例如 .obsidian/plugins/tab-settings-enhanced）
+cd <插件本地目录>（.obsidian/plugins/tab-settings-enhanced）
 git remote add origin https://github.com/wonderez/tab-settings-enhanced.git
-```
-
-> ⚠️ 仓库归属账号按实际修改：如果你的插件要放在其他 GitHub 账号/组织下，
-> 同步修改 `manifest.json` 的 `authorUrl` 和 `README.md` 中的链接。
-
-### Step 2 — 推送代码与标签
-
-```bash
-# 推送前最后自查：以下两条命令必须无输出
-git log --branches --tags --oneline -- data.json
-git grep -l "<你的vault名或个人目录名>" $(git rev-list --all) 2>/dev/null
-
 git push -u origin main
 git push origin --tags
 ```
 
-### Step 3 — 创建 GitHub Release
+> ⚠️ 仓库归属账号按实际修改：如果插件放在其他 GitHub 账号/组织下，
+> 同步修改 `manifest.json` 的 `authorUrl` 和 `README.md` 中的链接。
 
-1. 打开仓库页面 → 右侧 **Releases** → **Create a new release**
-2. **Choose a tag**: 选择已有的 `v1.6.11`（不要新建同名 tag）
-3. **Release title**: `1.6.11`
-4. 说明：写本版本功能摘要（可从 `README.md` 更新日志复制）
-5. 点击 **Publish release**
+### Step 2 — 创建 GitHub Release 并上传附件（✅ 已完成）
 
-> ⚠️ 必须点 Publish（正式发布）。Draft / Pre-release 不会被 obsidian-releases 的
-> 机器人识别，商店不会更新。
+Release `v1.6.11` 已发布（非 draft），附件已上传 `main.js` + `manifest.json`。
 
-### Step 4 — Fork 审核仓库并添加插件条目
-
-1. 浏览器打开 https://github.com/obsidianmd/obsidian-releases ，点击 **Fork**
-2. 克隆你自己的 fork（任选 SSH/HTTPS）：
+后续版本用命令行一步完成：
 
 ```bash
-git clone https://github.com/<你的用户名>/obsidian-releases.git
-cd obsidian-releases
+GH="/c/Program Files/GitHub CLI/gh.exe"
+git tag v1.7.0 && git push origin v1.7.0
+"$GH" release create v1.7.0 --title "1.7.0" --notes-file release-notes.md
+"$GH" release upload v1.7.0 main.js manifest.json
 ```
 
-3. 编辑 `community-plugins.json`，在数组**末尾**追加以下条目（保持 JSON 格式，
-   注意上一条末尾的逗号）：
+> ⚠️ 必须 Publish（正式发布），Draft / Pre-release 不会被目录识别。
+> ⚠️ **附件不能省**：用户安装时从 Release 下载 `main.js` 和 `manifest.json`。
 
-```json
-{
-  "id": "tab-settings-enhanced",
-  "name": "Tab Settings Enhanced",
-  "author": "CTA System",
-  "description": "Enhanced tab management: control where new tabs open, tab navigator with search/history, and parent-relative positioning.",
-  "repo": "wonderez/tab-settings-enhanced"
-}
-```
+### Step 3 — 在 community.obsidian.md 提交（⬜ 待你操作）
 
-4. 提交并推送到你的 fork：
+旧的"给 obsidian-releases 提 PR"方式已废弃。现在走官网表单：
 
-```bash
-git checkout -b add-tab-settings-enhanced
-git add community-plugins.json
-git commit -m "Add plugin: Tab Settings Enhanced"
-git push -u origin add-tab-settings-enhanced
-```
+1. 打开 **https://community.obsidian.md** ，右上角 **Sign in**
+2. 用 Obsidian 账号登录（没有就按提示注册一个）
+3. 进入 **Community profile** → 侧栏 **GitHub** → 点 **Connect**，跳转到 GitHub 授权
+   （授予目录只读访问权限，用于验证仓库归属）
+4. 建议同时开启 **Action required notifications**——审核失败会发邮件提醒
+5. 侧栏点 **Plugins** → **New plugin**，填写：
 
-### Step 5 — 提交 Pull Request
+| 表单字段 | 填写内容 |
+|---|---|
+| GitHub repository URL | `https://github.com/wonderez/tab-settings-enhanced` |
+| Owner | 选你自己（Myself） |
 
-1. 打开 https://github.com/obsidianmd/obsidian-releases ，GitHub 会自动提示
-   "Compare & pull request"
-2. **PR 标题**（有格式要求）：`Add plugin: Tab Settings Enhanced`
-3. **PR 描述**建议包含：
-   - 插件一句话简介
-   - 核心功能列表（3~5 条）
-   - 测试情况（桌面端/移动端是否都测过）
-   - 与同类插件（如 Pane Relief、Quick Switcher++）的差异化说明
-4. 提交后机器人会自动校验 JSON，通过后等待人工审核
+6. 阅读并同意 **Developer policies**，确认会持续维护该插件
+7. 点 **Submit**
 
-### Step 6 — 等待审核合并
+提交后进入**自动审核**：目录会解析仓库默认分支 HEAD 的 `manifest.json` 做校验
+（id 唯一性、字段完整性、Release 是否存在等）。你的目录页会显示待修正的错误项，
+改完仓库 + 发新 Release 即可，无需重开。
 
-- 通常 **1~7 天**。审核者可能在 PR 里留言要求修改（改 README、补说明等），
-  按 feedback 修改后 push 到同一分支，PR 自动更新，无需重开。
-- 合并后几分钟到几小时，插件出现在 **设置 → 第三方插件 → 浏览** 的搜索结果中。
+审核通过后插件出现在 **设置 → 第三方插件 → 浏览** 与 https://community.obsidian.md/plugins。
+
+> 目录**读取仓库默认分支的 manifest.json** 来验证，也**从 GitHub Release 下载**
+> `main.js` / `manifest.json` / `styles.css` 提供安装——两者都要正确。
 
 ---
 
@@ -125,7 +112,10 @@ git push -u origin add-tab-settings-enhanced
 | README 只有功能列表，没有安装/使用说明 | 已含商店安装、手动安装、完整使用文档 |
 | 没有 LICENSE | MIT 已就位 |
 | manifest 缺 `authorUrl` | 已补 |
-| release tag 与 manifest version 不一致 | 发版时核对（`v` 前缀 + 完全一致） |
+| version 不是 x.y.z 三段式 | `1.6.11` ✅ |
+| release tag 与 manifest version 不一致 | `v1.6.11` 一致 |
+| Release 未上传 main.js 附件 | 已上传 |
+| manifest 在默认分支 HEAD 不准确 | 已提交推送 |
 | main.js 压缩混淆 | 纯手写、未压缩 |
 | `minAppVersion` 过低，代码用了不存在的 API | 1.4.0，与实际依赖匹配 |
 | 插件含网络请求/数据外传 | 本插件纯本地运行、零网络请求 |
@@ -134,9 +124,10 @@ git push -u origin add-tab-settings-enhanced
 
 ---
 
-## 四、发布新版本（后续更新，无需再 PR）
+## 四、发布新版本（后续更新，无需再提交审核）
 
-obsidian-releases 的机器人会监听仓库的 Release，合并首次 PR 之后：
+插件一旦上架，Obsidian 直接从你的 GitHub Release 拉取更新，用户在应用内即可收到。
+只需三步：
 
 ```bash
 # 1. 改代码，语法校验（Node 环境无 obsidian 模块，仅查语法）
@@ -148,12 +139,16 @@ git add main.js manifest.json
 git commit -m "v1.7.0: <本版摘要>"
 git tag v1.7.0
 git push origin main --tags
+
+# 4. 发 Release 并上传附件
+GH="/c/Program Files/GitHub CLI/gh.exe"
+"$GH" release create v1.7.0 --title "1.7.0" --notes-file release-notes.md
+"$GH" release upload v1.7.0 main.js manifest.json
 ```
 
-4. GitHub 页面 → Releases → Create new release → 选 tag `v1.7.0` → Publish
-5. 等待机器人自动抓取（通常几分钟），商店用户即可收到更新
-
-> 版本号建议遵循语义化版本：bug 修复升补丁号（1.6.x），新功能升次版本号（1.x.0）。
+> ⚠️ `versions.json` 需同步新增 `"1.7.0": "1.4.0"` 条目——当用户运行的 Obsidian
+> 版本低于新 `minAppVersion` 时，Obsidian 用它回退到兼容的旧版本。
+> 版本号遵循语义化：bug 修复升补丁号（1.6.x），新功能升次版本号（1.x.0）。
 
 ---
 
@@ -201,10 +196,11 @@ git gc --prune=now
 
 ## 七、发布成功的验证
 
-1. 浏览器打开 https://obsidian.md/plugins?id=tab-settings-enhanced 能显示插件页
-2. README 顶部的 downloads 徽章开始计数
+1. 浏览器打开 https://community.obsidian.md/plugins 能搜索到 `Tab Settings Enhanced`
+2. 插件页显示你的 GitHub 仓库、README 节选、当前版本号
 3. Obsidian 内 **设置 → 第三方插件 → 浏览** 搜索 `Tab Settings Enhanced` 能搜到
-4. 从商店安装一台设备测试：安装 → 启用 → 各项功能正常
+4. 从目录安装一台设备测试：安装 → 启用 → 各项功能正常
+5. README 顶部的 downloads 徽章开始计数
 
 ---
 
@@ -212,4 +208,4 @@ git gc --prune=now
 
 不想直接上商店，可先用 **BRAT**（Beta Reviewer's Auto-update Tool）插件做
 beta 分发：安装 BRAT → 添加你的 GitHub 仓库 → 即可像正式插件一样自动更新，
-不影响商店审核状态。确认稳定后再走第二章流程。
+不影响目录收录。确认稳定后再走第二章 Step 3。

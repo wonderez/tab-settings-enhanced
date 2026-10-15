@@ -2,7 +2,7 @@
 
 > Enhanced tab management for Obsidian: control where new tabs open, navigate tabs with a keyboard-driven navigator, and colorize parent-child tab relationships.
 
-[![Downloads](https://img.shields.io/badge/dynamic/json?logo=obsidian&color=%23483699&label=downloads&query=%24%5B%22tab-settings-enhanced%22%5D.downloads&url=https%3A%2F%2Fraw.githubusercontent.com%2Fobsidianmd%2Fobsidian-releases%2Fmaster%2Fcommunity-plugins.json)](https://obsidian.md/plugins?id=tab-settings-enhanced)
+[![Downloads](https://img.shields.io/badge/dynamic/json?logo=obsidian&color=%23483699&label=downloads&query=%24%5B%22tab-settings-enhanced%22%5D.downloads&url=https%3A%2F%2Fraw.githubusercontent.com%2Fobsidianmd%2Fobsidian-releases%2Fmaster%2Fcommunity-plugins.json)](https://community.obsidian.md/plugins?id=tab-settings-enhanced)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
 **Tab Settings Enhanced** 是一款 Obsidian 标签管理增强插件，提供精细化的新标签打开位置控制、关闭后激活策略、防重复标签、父子标签颜色标记，以及一个键盘驱动的「标签导航器」模态框（序列快捷键切换 + 搜索 + 历史恢复）。
