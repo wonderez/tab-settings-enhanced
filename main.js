@@ -414,10 +414,17 @@ function t(key, lang) {
 }
 
 // 检测 Obsidian 语言
-function detectObsidianLanguage() {
-    // 尝试获取 Obsidian 的语言设置
-    const locale = window.localStorage.getItem('language') || navigator.language || 'en';
-    return locale.startsWith('zh') ? 'zh' : 'en';
+// 读界面语言统一走 Obsidian 官方的 loadLocalStorage（Obsidian 1.4.0+ 必有该 API）
+function detectObsidianLanguage(app) {
+    let locale = null;
+    try {
+        locale = app && typeof app.loadLocalStorage === 'function'
+            ? app.loadLocalStorage('language')
+            : null;
+    } catch (e) {
+        locale = null;
+    }
+    return (locale || navigator.language || 'en').startsWith('zh') ? 'zh' : 'en';
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -505,7 +512,7 @@ class TabSettingsEnhancedPlugin extends obsidian.Plugin {
             // 注册标签导航器命令（使用官方 hotkeys 字段设置默认快捷键 Alt+T）
             this.addCommand({
                 id: 'open-tab-navigator',
-                name: t('tabNavigatorCmd', detectObsidianLanguage()),
+                name: t('tabNavigatorCmd', detectObsidianLanguage(this.app)),
                 hotkeys: [{ modifiers: ['Alt'], key: 't' }],
                 callback: () => {
                     new TabNavigatorModal(this.app, this).open();
@@ -514,7 +521,7 @@ class TabSettingsEnhancedPlugin extends obsidian.Plugin {
             console.log("Tab Settings Enhanced: 标签导航器命令已注册");
 
             // ─── 功能1：标签切换/移动快捷键 ───────────────────────────
-            const cmdLang = detectObsidianLanguage();
+            const cmdLang = detectObsidianLanguage(this.app);
             // Alt+1 ~ Alt+8：跳转到第 N 个标签（固定标签在前、普通在后排序）
             for (let i = 1; i <= 8; i++) {
                 this.addCommand({
@@ -1914,7 +1921,7 @@ class TabSettingsEnhancedPlugin extends obsidian.Plugin {
 
     updateFocusLockStatusBar() {
         if (!this.statusBarItem) return;
-        const lang = this.settings.language === 'auto' ? detectObsidianLanguage() : this.settings.language;
+        const lang = this.settings.language === 'auto' ? detectObsidianLanguage(this.app) : this.settings.language;
         const on = this.settings.focusLockOn;
 
         // 使用 lucide SVG 图标（比 emoji 更精致、风格统一）
@@ -2006,7 +2013,7 @@ class TabSettingsEnhancedPlugin extends obsidian.Plugin {
     // ═══════════════════════════════════════════════════════════════════════════
 
     _getLang() {
-        return this.settings.language === 'auto' ? detectObsidianLanguage() : this.settings.language;
+        return this.settings.language === 'auto' ? detectObsidianLanguage(this.app) : this.settings.language;
     }
 
     // 监听标签头右键，等原生菜单弹出后注入自定义菜单项
@@ -2090,7 +2097,7 @@ class TabSettingsSettingTab extends obsidian.PluginSettingTab {
 
     getLang() {
         if (this.plugin.settings.language === 'auto') {
-            return detectObsidianLanguage();
+            return detectObsidianLanguage(this.app);
         }
         return this.plugin.settings.language;
     }
@@ -2551,7 +2558,7 @@ class TabNavigatorModal extends obsidian.Modal {
 
     getLang() {
         if (this.plugin.settings.language === 'auto') {
-            return detectObsidianLanguage();
+            return detectObsidianLanguage(this.app);
         }
         return this.plugin.settings.language;
     }

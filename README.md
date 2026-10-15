@@ -5,353 +5,354 @@
 [![Downloads](https://img.shields.io/badge/dynamic/json?logo=obsidian&color=%23483699&label=downloads&query=%24%5B%22tab-settings-enhanced%22%5D.downloads&url=https%3A%2F%2Fraw.githubusercontent.com%2Fobsidianmd%2Fobsidian-releases%2Fmaster%2Fcommunity-plugins.json)](https://community.obsidian.md/plugins?id=tab-settings-enhanced)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
-**Tab Settings Enhanced** 是一款 Obsidian 标签管理增强插件，提供精细化的新标签打开位置控制、关闭后激活策略、防重复标签、父子标签颜色标记，以及一个键盘驱动的「标签导航器」模态框（序列快捷键切换 + 搜索 + 历史恢复）。
+**Tab Settings Enhanced** is an Obsidian tab-management enhancement plugin. It gives you fine-grained control over where new tabs open, which tab activates on close, duplicate-tab prevention, parent-child tab color coding, and a keyboard-driven **Tab Navigator** modal (leader-key switching + search + history restore).
 
-- 版本：1.6.11
-- 最低 Obsidian 版本：1.4.0
-- 作者：CTA System
-- 平台：桌面端 & 移动端
-- 开源协议：MIT
+- Version: 1.6.11
+- Minimum Obsidian version: 1.4.0
+- Author: CTA System
+- Platforms: Desktop & Mobile
+- License: MIT
+- 中文说明见 [README.cn.md](./README.cn.md)
 
 ---
 
-## ✨ 功能特性
+## ✨ Features
 
-### 1. 新标签打开位置控制
+### 1. New tab placement control
 
-通过 patch `workspace.openLinkText`，拦截所有文件打开行为，按你的偏好放置新标签。
+Intercepts `workspace.openLinkText` so every file-opening action lands where you want it.
 
-| 选项 | 说明 |
+| Option | Behavior |
 |---|---|
-| `after-parent` | 父标签右侧（默认） |
-| `before-parent` | 父标签左侧 |
-| `first` | 标签栏第一个位置 |
-| `last` | 标签栏最后一个位置 |
-| `after-pinned` | 固定标签之后 |
+| `after-parent` | Right of the parent tab (default) |
+| `before-parent` | Left of the parent tab |
+| `first` | First position in the tab bar |
+| `last` | Last position in the tab bar |
+| `after-pinned` | After the pinned tabs |
 
-### 2. 关闭标签后激活策略
+### 2. Close-tab activation strategy
 
-关闭当前标签时，自动激活哪个标签。
+Which tab gets activated when the current one closes.
 
-| 选项 | 说明 |
+| Option | Behavior |
 |---|---|
-| `parent` | 父标签（默认） |
-| `left` | 左侧标签 |
-| `right` | 右侧标签 |
-| `recent` | 最近使用的标签 |
-| `firstTab` | 第一个标签 |
-| `lastTab` | 最后一个标签 |
+| `parent` | Parent tab (default) |
+| `left` | Tab on the left |
+| `right` | Tab on the right |
+| `recent` | Most recently used tab |
+| `firstTab` | First tab |
+| `lastTab` | Last tab |
 
-### 3. 新标签打开行为
+### 3. New tab opening behavior
 
-- **默认在新标签打开** (`openInNewTab`)：所有链接点击默认在新标签打开。
-- **快速切换器默认新标签打开** (`openQuickSwitchInNewTab`)：通过 `Ctrl+O` 快速切换器打开文件时，独立控制是否新标签打开，与上面的开关解耦。
+- **Open in new tab by default** (`openInNewTab`): all link clicks open in a new tab.
+- **Quick switcher opens in new tab** (`openQuickSwitchInNewTab`): independently controls whether files opened via the `Ctrl+O` quick switcher open in a new tab, decoupled from the switch above.
 
-  | 场景 | openInNewTab | openQuickSwitchInNewTab | 结果 |
+  | Scenario | openInNewTab | openQuickSwitchInNewTab | Result |
   |---|---|---|---|
-  | 链接点击 | false | false | 当前标签打开 |
-  | 链接点击 | true | false | 新标签打开 |
-  | 快速切换器 | false | true | 新标签打开 |
-  | 快速切换器 | true | * | 新标签打开 |
+  | Link click | false | false | Opens in current tab |
+  | Link click | true | false | Opens in new tab |
+  | Quick switcher | false | true | Opens in new tab |
+  | Quick switcher | true | * | Opens in new tab |
 
-- **防止重复标签** (`deduplicateTabs`)：打开已存在的文件时，自动切换到已有标签，而非新开一个。
-- **面板链接默认新标签打开** (`openPanelLinkInNewTab`)：在 **书签 / 搜索 / 文件列表 / 入链(Backlinks) / 出链(Outgoing Links)** 面板中点击文件链接时，默认在新标签打开。默认关闭（保持 Obsidian 原生单击行为）。
+- **Prevent duplicate tabs** (`deduplicateTabs`): opening a file that is already open switches to the existing tab instead of creating a new one.
+- **Panel links open in new tab** (`openPanelLinkInNewTab`): file links clicked inside **Bookmarks / Search / File list / Backlinks / Outgoing links** panels open in a new tab. Off by default (preserves native single-click behavior).
 
-### 4. 标签颜色标记
+### 4. Tab color coding
 
-为父子标签分配同色系，让标签层级关系一目了然。
+Parent and child tabs share a color family so the hierarchy is readable at a glance.
 
-- **配色方案** (`colorPalette`)：内置 7 套配色
-  - 🌿 莫兰迪 Morandi（默认）
-  - 🎨 鲜明 Vivid
-  - 🌈 彩虹 Rainbow
-  - 🌊 海洋 Ocean
-  - 🍬 糖果 Candy
-  - 💡 霓虹 Neon
-  - 🎲 随机 Random（动态生成，色相差 60° 以上）
-- **颜色透明度** (`colorOpacity`)：0 ~ 1，默认 0.3
-- **视觉呈现**：标签头下方绘制与父子关系同色的下划线（左对齐、向右生长），宽度按 未激活 10% / hover 20% / 激活 30% 递进，点击激活或去重激活时有弹簧脉冲反馈（30% → 90% → 30%）；未配置颜色的标签使用主题灰兜底，同样享受全套动画。
+- **Palettes** (`colorPalette`): 7 built-in schemes
+  - 🌿 Morandi (default)
+  - 🎨 Vivid
+  - 🌈 Rainbow
+  - 🌊 Ocean
+  - 🍬 Candy
+  - 💡 Neon
+  - 🎲 Random (dynamically generated, hue separation > 60°)
+- **Opacity** (`colorOpacity`): 0 ~ 1, default 0.3
+- **Visual style**: an underline is drawn beneath the tab header in the parent-child color (left-aligned, growing rightward). Width ramps by state — 10% inactive / 20% hover / 30% active — with a spring pulse on click-to-activate or duplicate activation (30% → 90% → 30%). Tabs without a color fall back to the theme gray and get the same full animation set.
 
-### 5. 标签导航器（Tab Navigator）
+### 5. Tab Navigator
 
-一个键盘驱动的标签切换模态框，集字母快捷切换、名称搜索、快捷关闭、历史恢复于一体。
+A keyboard-driven tab-switching modal combining leader-key switching, name search, quick close, and history restore.
 
-**默认快捷键**：`Alt + T`（可在 设置 → 快捷键 中自定义）
+**Default hotkey**: `Alt + T` (customizable in Settings → Hotkeys)
 
-#### 模态框布局
+#### Modal layout
 
 ```
 ┌─────────────────────────────────────────────┐
-│  🔍 搜索标签...                              │  ← 输入框（自动聚焦）
+│  🔍 Search tabs...                            │  ← input (auto-focused)
 ├─────────────────────────────────────────────┤
-│  📂 打开的标签                               │
-│  [a]  📄 笔记标题1               [×]        │  ← 字母键 + 标题 + 关闭按钮
-│  [s]  📄 笔记标题2               [×]        │
+│  📂 Open tabs                                 │
+│  [a]  📄 Note title 1               [×]      │  ← letter + title + close button
+│  [s]  📄 Note title 2               [×]      │
 ├─────────────────────────────────────────────┤
-│  🕒 最近关闭                                 │
-│  [k]  📄 已关闭的笔记1            ↩         │  ← 字母键 + 标题 + 恢复按钮
+│  🕒 Recently closed                           │
+│  [k]  📄 Closed note 1              ↩        │  ← letter + title + restore button
 └─────────────────────────────────────────────┘
-   点按 Alt 进入打开模式 | 点按 Ctrl 进入关闭模式 | ↑↓ 选择 | Enter 确认 | ESC 退出
+   Tap Alt for open mode | Tap Ctrl for close mode | ↑↓ select | Enter confirm | ESC exit
 ```
 
-#### 键盘交互
+#### Keyboard interaction
 
-| 按键 | 行为 |
+| Key | Behavior |
 |---|---|
-| 点按 `Alt` 后松开 | 进入「打开模式」（底部提示条高亮 `▶ 打开模式`） |
-| 点按 `Ctrl` 后松开 | 进入「关闭模式」（底部提示条高亮 `✕ 关闭模式`） |
-| 模式下按 `a` ~ `z` | 打开 / 关闭对应字母的标签 |
-| `Esc` | 取消当前模式（不关闭模态框）；无模式时关闭模态框 |
-| `↑` / `↓` | 上下移动选中项 |
-| `Enter` | 激活/恢复当前选中项 |
-| 任意可输入字符 | 无模式下输入到搜索框，实时过滤 |
+| Tap `Alt` then release | Enter **open mode** (footer highlights `▶ Open mode`) |
+| Tap `Ctrl` then release | Enter **close mode** (footer highlights `✕ Close mode`) |
+| `a` ~ `z` while armed | Open / close the tab assigned to that letter |
+| `Esc` | Cancel the current mode (keeps the modal open); closes the modal when no mode is armed |
+| `↑` / `↓` | Move the selection |
+| `Enter` | Activate / restore the selected item |
+| Any printable character | Typed into the search box, live filtering |
 
-#### 特性
+#### Highlights
 
-- **序列快捷键（点按前导键）**：先点按 `Alt`/`Ctrl` 进入打开/关闭模式，再按字母执行。采用「点按检测」而非组合键——`Alt+A`、`Ctrl+C` 等组合键原样放行，**不会劫持系统或全局快捷键**；进入模式后焦点自动移出搜索框，**拼音输入法下无需切换输入法**，字母键直达执行。
-- **实时搜索**：匹配文件名、完整路径、父文件夹名（不区分大小写）。
-- **历史恢复**：自动记录最近关闭的 30 条标签，可在「最近关闭」区域一键恢复。
-- **去重显示**：已打开的标签不会在历史区域重复出现。
-- **搜索覆盖历史**：搜索结果同时包含打开的标签和历史标签。
-- **归档区**：右侧边栏顶部为「已归档」模块（见下方功能 8）。
+- **Leader-key sequences**: tap `Alt`/`Ctrl` first to arm open/close mode, then press a letter. Built on *tap detection* rather than modifier combos — combos like `Alt+A` or `Ctrl+C` pass through untouched, so **system and global hotkeys are never hijacked**. Once armed, focus leaves the search box, so **pinyin IME users never have to switch input methods** — the letter key executes directly.
+- **Live search**: matches file name, full path, and parent folder name (case-insensitive).
+- **History restore**: automatically records the last 30 closed tabs, restorable in one click from the Recently closed section.
+- **Deduplicated display**: open tabs never appear again in the history section.
+- **Search covers history**: results include both open tabs and closed-tab history.
+- **Archive section**: the top of the right sidebar holds the Archived module (see feature 8 below).
 
-### 6. 标签切换/移动快捷键
+### 6. Tab jump / cycle hotkeys
 
-通过命令面板或自定义快捷键快速切换标签。所有快捷键均可在 **设置 → 快捷键** 中修改。
+Switch tabs fast via the command palette or custom hotkeys. All hotkeys are rebindable in **Settings → Hotkeys**.
 
-| 快捷键 | 功能 |
+| Hotkey | Action |
 |---|---|
-| `Alt+1` ~ `Alt+8` | 跳转到第 1~8 个标签 |
-| `Alt+9` | 跳转到最后一个标签 |
-| `Alt+←` / `Alt+→` | 上一个 / 下一个标签（循环） |
+| `Alt+1` ~ `Alt+8` | Jump to tab 1~8 |
+| `Alt+9` | Jump to the last tab |
+| `Alt+←` / `Alt+→` | Previous / next tab (wraps around) |
 
-> 编号顺序按 **固定标签在前、普通标签在后** 排列（各自保持标签栏原有相对顺序）。
+> Numbering follows the tab bar order with **pinned tabs first**, preserving the original relative order within each group.
 
-### 7. 每标签导航历史（Per-Tab History）
+### 7. Per-tab navigation history
 
-- **复用 Obsidian 内置的每标签(per-pane)导航历史**（v0.16.3+ 核心功能），本插件不另建历史栈，因此与内置 `Ctrl+Alt+←/→` 完全一致、且随工作区持久化。
-- **历史计数显示在原生 返回/前进 按钮旁**（视图标题栏的 `[←]3 [→]1`，0 也显示），数据直接读自 `leaf.history`。需开启 设置 → 外观 → 显示标签标题栏。
-- **鼠标侧键导航**：**第 4 键 = 后退，第 5 键 = 前进**（底层调用内置 `app:go-back` / `app:go-forward` 命令）。
-- 设置项：**启用鼠标侧键标签导航历史** (`enableMouseSideNav`)、**显示历史计数** (`historyShowCount`)。
-- 与标签导航器联动：每个打开的标签会显示其 `◀N ▶M` 历史计数。
+- **Reuses Obsidian's built-in per-pane history** (core feature since v0.16.3). The plugin does not build its own stack, so behavior matches the built-in `Ctrl+Alt+←/→` exactly and persists with the workspace.
+- **History counts render next to the native back/forward buttons** (`[←]3 [→]1` in the view header, 0 included), read straight from `leaf.history`. Requires Settings → Appearance → Show tab title bars.
+- **Mouse side buttons**: **button 4 = back, button 5 = forward** (delegates to the built-in `app:go-back` / `app:go-forward` commands).
+- Settings: **Enable mouse side-button navigation** (`enableMouseSideNav`), **Show history counts** (`historyShowCount`).
+- Integrated with the Tab Navigator: every open tab shows its `◀N ▶M` history counts.
 
-### 8. 自动归档（Auto-Archive）+ 专注模式
+### 8. Auto-archive + Focus mode
 
-- 默认关闭，需在设置中启用。
-- 可配置闲置超时（默认 30 分钟）：每分钟检查一次，非固定、非当前活动且闲置超时的标签自动关闭并进入归档区。
-- 归档区显示在标签导航器右侧边栏顶部（「最近关闭」上方），归档标签可点击恢复。
-- 归档历史上限可配置（默认 100 条），超限时移除最旧记录。
-- **专注模式**：一键关闭所有非固定标签（全部进入归档区）。开启入口：① 命令面板命令；② **标签页右键菜单**（标签的更多选项）。
-- **启用开关** (`enableFocusMode`，默认开)：关闭后命令与右键菜单项均不可用。
+- Off by default; enable it in settings.
+- Configurable idle timeout (default 30 min): checked once per minute, unpinned, non-active tabs that exceed the timeout are closed and moved to the archive.
+- The archive lives at the top of the Tab Navigator's right sidebar (above Recently closed); archived tabs restore on click.
+- Archive history cap is configurable (default 100); the oldest entries are dropped beyond it.
+- **Focus mode**: closes every unpinned tab in one shot (all into the archive). Entry points: ① a command-palette command; ② the **tab context menu**.
+- **Enable switch** (`enableFocusMode`, default on): when off, both the command and the context-menu item are disabled.
 
-### 9. 焦点锁定（Focus Lock）
+### 9. Focus lock
 
-- **两个独立设置项**：
-  - **显示状态栏按钮** (`enableFocusLock`)：控制状态栏是否显示焦点锁定切换按钮。
-  - **焦点锁定** (`focusLockOn`)：直接控制锁定开/关，与状态栏图标**双向联动**（改任一处，另一处同步）。
-- 状态栏图标采用 lucide SVG：锁定 = `locate-fixed`（定位已固定），未锁定 = `locate-off`；锁定态高亮强调色，未锁定态半透明。
-- 锁定开启后，点击侧边栏面板（文件树、搜索、标签面板等）不会偷走主编辑区焦点，链接也不会打开到错误的窗格。
-- 若正在侧边栏输入框中输入，则不打断输入。
-- 锁定状态随 `data.json` 持久化保存，重启后保持。
+- **Two independent settings**:
+  - **Show status bar button** (`enableFocusLock`): whether the focus-lock toggle appears in the status bar.
+  - **Focus lock** (`focusLockOn`): directly toggles the lock, **two-way synced** with the status bar icon (change either, the other follows).
+- Status bar icons are lucide SVGs: locked = `locate-fixed`, unlocked = `locate-off`; locked is highlighted in the accent color, unlocked is semi-transparent.
+- While locked, clicking sidebar panels (file tree, search, tags panel, etc.) will not steal focus from the main editor, and links will not open into the wrong pane.
+- Typing inside a sidebar input is never interrupted.
+- Lock state persists in `data.json` and survives restarts.
 
-### 10. 禅模式（Zen Mode）
+### 10. Zen mode
 
-- 一键进入**心流写作状态**：隐藏所有无关 UI —— 左侧图标栏(ribbon)、左右侧边栏、状态栏、标签栏、笔记标题栏、窗口标题栏全部隐藏，当前笔记内容**全屏铺满**（不固定宽度，更霸气）。
-- 进入方式：① 命令面板「禅模式」；② 点击左侧 **Ribbon 羽毛笔图标**；③ **标签页右键菜单**；④ 可自定义快捷键。
-- 退出方式：按 `ESC`、再次执行命令、或再次点击羽毛笔图标。
-- 进入时自动把焦点放回当前编辑器，右上角有 `ESC` 退出提示。
-- **启用开关** (`enableZenMode`，默认开)：关闭后命令/羽毛笔图标/右键菜单均不可用（若在禅模式中则自动退出）。
+- One click into **flow state**: hides every irrelevant UI — the left ribbon, both sidebars, the status bar, the tab bar, the note title bar, and the window title bar — and the current note fills the whole screen (no fixed width).
+- Enter via: ① the command palette; ② the **feather icon in the left ribbon**; ③ the **tab context menu**; ④ a custom hotkey.
+- Exit with `ESC`, by running the command again, or by clicking the feather icon again.
+- On entry, focus returns to the editor and an `ESC` exit hint appears in the top-right corner.
+- **Enable switch** (`enableZenMode`, default on): when off, the command / icon / context-menu item are all disabled (and zen mode exits automatically if active).
 
-### 11. 设置页快捷键一览
+### 11. Hotkey cheat sheet in settings
 
-- 设置页底部新增「⌨️ 快捷键」分区：列出所有命令及默认快捷键（含鼠标侧键），并提供「**打开快捷键设置**」按钮一键跳转，方便自定义。
+- The bottom of the settings tab gains a "⌨️ Hotkeys" section listing every command with its default hotkey (including mouse side buttons), plus an **Open hotkey settings** button that jumps straight there for rebinding.
 
 ---
 
-## 🌐 多语言支持
+## 🌐 Multilingual support
 
-内置中文 / 英文双语，并支持自动跟随 Obsidian 界面语言。
+Ships with Chinese and English, and can follow Obsidian's UI language automatically.
 
-| 选项 | 说明 |
+| Option | Behavior |
 |---|---|
-| `auto` | 跟随 Obsidian 界面语言（默认） |
-| `en` | 强制英文 |
-| `zh` | 强制中文 |
+| `auto` | Follow Obsidian's UI language (default) |
+| `en` | Force English |
+| `zh` | Force Chinese |
 
 ---
 
-## 📦 安装
+## 📦 Installation
 
-### 方式一：社区插件商店（推荐）
+### Option 1: Community plugin browser (recommended)
 
-1. 打开 **设置 → 第三方插件 → 社区插件市场 → 浏览**。
-2. 搜索 **Tab Settings Enhanced**，点击安装。
-3. 安装完成后，在已安装插件列表中点击启用。
+1. Open **Settings → Community plugins → Browse**.
+2. Search for **Tab Settings Enhanced** and click Install.
+3. Click Enable in the installed-plugin list.
 
-### 方式二：手动安装
+### Option 2: Manual install
 
-1. 下载 `main.js` 与 `manifest.json`（`data.json` 为插件运行时自动生成的用户数据，无需下载）。
-2. 在 Obsidian Vault 中创建目录：`.obsidian/plugins/tab-settings-enhanced/`
-3. 将下载的文件放入该目录。
-4. 在 Obsidian 中打开 **设置 → 第三方插件**，关闭「安全模式」。
-5. 在插件列表中找到 **Tab Settings Enhanced**，点击启用。
+1. Download `main.js` and `manifest.json` (`data.json` is user data generated at runtime — you do not need it).
+2. Create the directory `.obsidian/plugins/tab-settings-enhanced/` inside your vault.
+3. Drop the downloaded files into that directory.
+4. In Obsidian, open **Settings → Community plugins** and turn off **Restricted mode**.
+5. Find **Tab Settings Enhanced** in the list and click Enable.
 
-### 方式三：从源码构建（开发者）
+### Option 3: From source (developers)
 
-本项目**无构建流程**，`main.js` 即插件本体（手写、未压缩、未混淆），克隆后可直接使用：
+This project has **no build step**. `main.js` *is* the plugin — hand-written, unminified, unobfuscated — so a clone is ready to use:
 
 ```bash
 git clone https://github.com/wonderez/tab-settings-enhanced.git
 ```
 
-将 `main.js` 与 `manifest.json` 复制（或软链接）到 `<你的Vault>/.obsidian/plugins/tab-settings-enhanced/`，在 Obsidian 中启用即可。修改代码后建议运行 `node --check main.js` 校验语法。
+Copy (or symlink) `main.js` and `manifest.json` into `<your-vault>/.obsidian/plugins/tab-settings-enhanced/` and enable it in Obsidian. After editing, run `node --check main.js` to validate the syntax.
 
 ---
 
-## ⚙️ 配置项一览
+## ⚙️ Settings reference
 
-所有配置存储在 `.obsidian/plugins/tab-settings-enhanced/data.json`，亦可在 设置 → Tab Settings Enhanced 中可视化调整。
+All settings are stored in `.obsidian/plugins/tab-settings-enhanced/data.json` and are also adjustable in **Settings → Tab Settings Enhanced**.
 
-| 字段 | 类型 | 默认值 | 说明 |
+| Field | Type | Default | Description |
 |---|---|---|---|
-| `language` | string | `"auto"` | 界面语言 |
-| `newTabPlacement` | string | `"after-parent"` | 新标签打开位置 |
-| `closeTabActivation` | string | `"parent"` | 关闭标签后激活策略 |
-| `openInNewTab` | boolean | `true` | 默认在新标签打开 |
-| `openQuickSwitchInNewTab` | boolean | `false` | 快速切换器默认新标签打开 |
-| `openPanelLinkInNewTab` | boolean | `false` | 书签/搜索/文件列表/入链/出链面板链接默认新标签打开 |
-| `deduplicateTabs` | boolean | `true` | 防止重复标签 |
-| `enableTabColors` | boolean | `true` | 启用标签颜色标记 |
-| `colorPalette` | string | `"morandi"` | 配色方案 |
-| `colorOpacity` | number | `0.3` | 颜色透明度 |
-| `enableMouseSideNav` | boolean | `true` | 启用鼠标侧键标签导航历史（第4键后退/第5键前进） |
-| `historyShowCount` | boolean | `true` | 在原生返回/前进按钮旁显示历史计数 |
-| `enableAutoArchive` | boolean | `false` | 启用自动归档 |
-| `autoArchiveTimeout` | number | `30` | 自动归档闲置超时（分钟） |
-| `autoArchiveMaxHistory` | number | `100` | 归档历史上限 |
-| `enableFocusMode` | boolean | `true` | 启用专注模式（关闭后命令/右键菜单不可用） |
-| `enableFocusLock` | boolean | `false` | 在状态栏显示焦点锁定按钮 |
-| `focusLockOn` | boolean | `false` | 焦点锁定开/关（与状态栏图标联动，持久化） |
-| `enableZenMode` | boolean | `true` | 启用禅模式（关闭后命令/图标/右键菜单不可用） |
+| `language` | string | `"auto"` | UI language |
+| `newTabPlacement` | string | `"after-parent"` | Where new tabs open |
+| `closeTabActivation` | string | `"parent"` | Which tab activates on close |
+| `openInNewTab` | boolean | `true` | Open links in a new tab by default |
+| `openQuickSwitchInNewTab` | boolean | `false` | Quick switcher opens in a new tab |
+| `openPanelLinkInNewTab` | boolean | `false` | Panel links (bookmarks/search/file list/backlinks/outgoing) open in a new tab |
+| `deduplicateTabs` | boolean | `true` | Prevent duplicate tabs |
+| `enableTabColors` | boolean | `true` | Enable tab color coding |
+| `colorPalette` | string | `"morandi"` | Color palette |
+| `colorOpacity` | number | `0.3` | Color opacity |
+| `enableMouseSideNav` | boolean | `true` | Mouse side-button history navigation (button 4 back / 5 forward) |
+| `historyShowCount` | boolean | `true` | Show history counts next to the native back/forward buttons |
+| `enableAutoArchive` | boolean | `false` | Enable auto-archive |
+| `autoArchiveTimeout` | number | `30` | Auto-archive idle timeout (minutes) |
+| `autoArchiveMaxHistory` | number | `100` | Archive history cap |
+| `enableFocusMode` | boolean | `true` | Enable focus mode (disables the command / context-menu item when off) |
+| `enableFocusLock` | boolean | `false` | Show the focus-lock button in the status bar |
+| `focusLockOn` | boolean | `false` | Focus lock on/off (synced with the status bar icon, persisted) |
+| `enableZenMode` | boolean | `true` | Enable zen mode (disables command/icon/context-menu item when off) |
 
-> 标签导航器的历史记录（`closedTabsHistory`，最多 30 条）与归档区（`archivedTabs`）也会写入 `data.json` 持久化保存。
+> The Tab Navigator's history (`closedTabsHistory`, max 30 entries) and the archive (`archivedTabs`) are also persisted into `data.json`.
 
 ---
 
-## ⌨️ 命令与快捷键
+## ⌨️ Commands and hotkeys
 
-| 命令 | 默认快捷键 | 说明 |
+| Command | Default hotkey | Description |
 |---|---|---|
-| 打开标签导航器 / Open Tab Navigator | `Alt + T` | 呼出标签导航器模态框 |
-| 跳转到标签 1~8 / Jump to Tab 1~8 | `Alt + 1` ~ `Alt + 8` | 跳转到第 N 个标签（固定在前排序） |
-| 跳转到最后一个标签 / Jump to Last Tab | `Alt + 9` | 跳转到最后一个标签 |
-| 上一个 / 下一个标签 | `Alt + ←` / `Alt + →` | 在标签间循环切换 |
-| 专注模式：关闭所有非固定标签 | —（可自定义） | 一键关闭所有非固定标签并归档（亦在标签页右键菜单） |
-| 禅模式 / Zen Mode | —（可自定义） | 隐藏所有无关 UI，全屏专注写作（ESC 退出） |
+| Open Tab Navigator | `Alt + T` | Bring up the Tab Navigator modal |
+| Jump to Tab 1~8 | `Alt + 1` ~ `Alt + 8` | Jump to the Nth tab (pinned-first ordering) |
+| Jump to Last Tab | `Alt + 9` | Jump to the last tab |
+| Previous / Next Tab | `Alt + ←` / `Alt + →` | Cycle between tabs |
+| Focus mode: close all unpinned tabs | — (rebindable) | Close and archive every unpinned tab (also in the tab context menu) |
+| Zen Mode | — (rebindable) | Hide all irrelevant UI for full-screen focus (ESC to exit) |
 
-所有快捷键均可在 **设置 → 快捷键** 中自定义。
-
----
-
-## 🛠️ 实现原理简述
-
-- **打开行为拦截**：通过 `patchOpenLink()` 重写 `workspace.openLinkText`，根据 `newTabPlacement` 决定新标签插入位置，并通过 DOM 检测快速切换器模态框判断调用来源。
-- **关闭行为拦截**：通过 `patchLeafDetach()` 重写 `WorkspaceLeaf.prototype.detach`，在标签关闭前记录历史，并按 `closeTabActivation` 策略激活下一个标签。
-- **父子关系追踪**：维护父子标签映射，用于颜色分配与关闭后回到父标签。
-- **颜色分配**：从选定配色方案中按父子层级分配颜色，同色系标识父子关系。
-- **标签导航器**：`TabNavigatorModal` 继承自 `obsidian.Modal`，独立实现字母分配、搜索过滤、键盘事件处理。
-
-> 完整设计文档见 [`IMPLEMENTATION_PLAN.md`](./IMPLEMENTATION_PLAN.md)。
+All hotkeys are rebindable in **Settings → Hotkeys**.
 
 ---
 
-## 🔒 兼容性与注意事项
+## 🛠️ How it works
 
-- 完全向下兼容，所有新增配置默认值与原行为一致。
-- 通过 `register()` 注册还原函数，插件卸载时自动恢复所有 patch，不污染 Obsidian 原生行为。
-- 标签导航器模态框是独立的，不修改原生快速切换器，与 Quick Switcher++ 等插件无冲突。
-- 历史记录仅存储路径信息（不存文件内容），最多 30 条，内存占用极低。
+- **Open interception**: `patchOpenLink()` rewrites `workspace.openLinkText` and decides the insert position per `newTabPlacement`, detecting the quick-switcher modal in the DOM to identify the call source.
+- **Close interception**: `patchLeafDetach()` rewrites `WorkspaceLeaf.prototype.detach`, records history before the tab closes, and activates the next tab per the `closeTabActivation` strategy.
+- **Parent-child tracking**: maintains a parent-child tab map used for color assignment and for returning to the parent tab on close.
+- **Color assignment**: pulls from the selected palette by hierarchy level so a color family marks each parent-child group.
+- **Tab Navigator**: `TabNavigatorModal` extends `obsidian.Modal` with its own letter assignment, search filtering, and keyboard handling.
+
+> Full design doc: [`IMPLEMENTATION_PLAN.md`](./IMPLEMENTATION_PLAN.md).
 
 ---
 
-## 📁 项目结构
+## 🔒 Compatibility and notes
+
+- Fully backward compatible — every new setting defaults to the original behavior.
+- Every patch is registered through `register()`, so unloading the plugin restores all original behavior without polluting Obsidian.
+- The Tab Navigator is a standalone modal and does not touch the native quick switcher, so it does not conflict with Quick Switcher++ and similar plugins.
+- History stores path information only (never file content), capped at 30 entries, with negligible memory use.
+
+---
+
+## 📁 Project structure
 
 ```
 tab-settings-enhanced/
-├── manifest.json            # Obsidian 插件清单
-├── main.js                  # 插件主文件（可直接安装使用）
-├── LICENSE                  # MIT 开源协议
-├── IMPLEMENTATION_PLAN.md   # 功能增强实现方案（设计文档）
-└── README.md                # 本文件
+├── manifest.json            # Obsidian plugin manifest
+├── main.js                  # Plugin entry file (ready to use as-is)
+├── LICENSE                  # MIT license
+├── IMPLEMENTATION_PLAN.md   # Design document
+└── README.md                # This file
 ```
 
-> `data.json`（用户配置与历史记录）由插件运行时自动生成，含个人笔记路径，不纳入版本库。
+> `data.json` (user settings and history) is generated at runtime, contains personal note paths, and is intentionally not version-controlled.
 
 ---
 
-## 📝 更新日志
+## 📝 Changelog
 
 ### v1.6.11
 
-- 标签颜色下划线宽度收窄为 10% / 20% / 30%（未激活 / hover / 激活），脉冲峰值 100% → 90%；无层级关系的标签增加灰色兜底下划线，同样享受 hover、激活与点击脉冲动画。
+- Tab color underline widths narrowed to 10% / 20% / 30% (inactive / hover / active); pulse peak 100% → 90%. Tabs without a parent-child relationship get a gray fallback underline with the same hover, active, and click-pulse animations.
 
-### v1.6.1 ~ v1.6.10（概要）
+### v1.6.1 ~ v1.6.10 (summary)
 
-- **v1.6.1**：16 项 bug 修复——自动归档对「从未激活标签」失效、最近关闭历史不持久化、入链/出链面板点击同文件双开、parentMap 环保护、popout 浮动窗口误判、历史徽标滞后等。
-- **v1.6.2**：标签导航器改为「点按前导键」序列快捷键（点按 Alt=打开模式 / Ctrl=关闭模式），不再劫持 Alt+字母 等全局快捷键；下划线改为标题下方居中、弹簧动画、激活 60%。
-- **v1.6.3**：序列快捷键兼容拼音输入法——进入模式后焦点移出搜索框，IME 不介入，无需切换输入法。
-- **v1.6.4 ~ v1.6.10**：下划线视觉持续打磨——改用独立子元素避开原生伪元素冲突、去重激活「下划线脉冲」替代原生黄色闪烁、左对齐向右生长、高度/不透明度三档层级、左偏移 6px、峰值 90%。
+- **v1.6.1**: 16 bug fixes — auto-archive never fired for never-activated tabs, recently-closed history was not persisted, backlink/outgoing panel clicks double-opened the same file, parentMap cycle protection, popout window misdetection, stale history badges, and more.
+- **v1.6.2**: the Tab Navigator switched to tap-the-leader-key sequences (tap Alt = open mode / Ctrl = close mode) so `Alt+letter` global hotkeys are no longer hijacked; the underline moved under the centered title with spring animation and a 60% active width.
+- **v1.6.3**: leader-key sequences became pinyin-IME friendly — arming a mode moves focus out of the search box so the IME never intercepts letter keys; no input-method switching required.
+- **v1.6.4 ~ v1.6.10**: continued underline polish — a dedicated child element replaces the native pseudo-element to avoid style conflicts, a duplicate-activation "underline pulse" replaces the native yellow flash, left-aligned rightward growth, three-tier height/opacity hierarchy, 6px left offset, 90% pulse peak.
 
 ### v1.6.0
 
-- **修复标签右键菜单**：`tab-context-menu` 事件不可靠，改为纯 DOM 注入方案——监听标签头 `contextmenu`，等原生菜单弹出后往 `.menu` 注入菜单项，稳定可用。**禅模式项也加入右键菜单**。
-- **禅模式全屏铺满**：取消固定宽度（880px），笔记内容占满全屏，更霸气。
-- **新增功能开关**：`enableFocusMode`（专注模式）与 `enableZenMode`（禅模式），默认开启；关闭后对应命令/图标/右键菜单项均不可用，禅模式开关关闭时自动退出禅模式并隐藏羽毛笔图标。
-- **设置页快捷键一览**：新增「⌨️ 快捷键」分区，列出所有命令及默认快捷键（含鼠标侧键），附「打开快捷键设置」按钮一键跳转自定义。
+- **Fixed the tab context menu**: the `tab-context-menu` event proved unreliable, replaced with pure DOM injection — listen for `contextmenu` on the tab header, wait for the native menu to render, then inject items into `.menu`. The **zen mode entry was also added to the context menu**.
+- **Zen mode fills the screen**: dropped the fixed 880px width so note content takes the whole viewport.
+- **New feature switches**: `enableFocusMode` (focus mode) and `enableZenMode` (zen mode), on by default; when off, the matching command / icon / context-menu item is disabled, and turning the zen switch off while in zen mode exits it and hides the feather icon.
+- **Hotkey cheat sheet in settings**: a new "⌨️ Hotkeys" section listing every command with its default hotkey (including mouse side buttons) and a one-click jump to the hotkey settings.
 
 ### v1.5.0
 
-- **每标签导航历史设置简化**：移除「启用每标签导航历史」（系统内置功能，无需开关），替换为「**启用鼠标侧键标签导航历史**」(`enableMouseSideNav`)。
-- **历史计数位置调整**：从标签头徽标改为显示在**原生 返回/前进 按钮旁**（视图标题栏 `[←]3 [→]1`），0 也显示数字。
-- **专注模式入口扩展**：除命令面板外，新增到**标签页右键菜单**（标签的更多选项），一键开启。
-- **新增禅模式（Zen Mode）**：隐藏 ribbon/侧边栏/状态栏/标签栏/标题栏等所有无关 UI，笔记内容居中限宽全屏显示，专注写作；命令/Ribbon 羽毛笔图标进入，`ESC` 退出。
+- **Simplified per-tab history settings**: removed "Enable per-tab history" (a built-in feature needing no switch) in favor of **Enable mouse side-button history navigation** (`enableMouseSideNav`).
+- **History counts moved**: from tab-header badges to the **native back/forward buttons** (`[←]3 [→]1` in the view header), including zeros.
+- **More focus mode entry points**: in addition to the command palette, focus mode now lives in the **tab context menu**.
+- **Added zen mode**: hides the ribbon, sidebars, status bar, tab bar, and title bars for distraction-free writing; enter via command or the ribbon feather icon, exit with `ESC`.
 
 ### v1.4.0
 
-- **重构 Per-Tab History**：改为复用 Obsidian 内置 `leaf.history`（不再自建历史栈），计数/侧键与内置 `Ctrl+Alt+←/→` 完全一致，且随工作区持久化。代码更简洁。
-- **焦点锁定优化**：拆分为「显示状态栏按钮」+「焦点锁定开关」两个独立设置项，双向联动；状态栏图标由 emoji 换成 lucide SVG（`locate-fixed`/`locate-off`），锁定态高亮。
-- **新增面板链接开关** `openPanelLinkInNewTab`：书签 / 搜索 / 文件列表 / 入链 / 出链面板点击文件链接时默认新标签打开（默认关闭）。
+- **Refactored per-tab history** to reuse Obsidian's built-in `leaf.history` instead of a self-built stack, so counts and side buttons match the built-in `Ctrl+Alt+←/→` exactly and persist with the workspace. Simpler code.
+- **Focus lock refinement**: split into "Show status bar button" + "Focus lock switch" as two independent, two-way-synced settings; status bar icons switched from emoji to lucide SVGs (`locate-fixed` / `locate-off`) with a highlighted locked state.
+- **New panel link switch** `openPanelLinkInNewTab`: file links in Bookmarks / Search / File list / Backlinks / Outgoing links panels open in a new tab by default (off by default).
 
 ### v1.3.0
 
-- 新增 **标签切换/移动快捷键**：`Alt+1~9` 跳转、`Alt+←/→` 前后切换（固定标签在前排序）
-- 新增 **每标签独立导航历史**：前进/后退栈、标签头计数徽标（`◀3 ▶1`）、鼠标侧键支持、与标签导航器联动显示
-- 新增 **自动归档**：闲置超时自动关闭非固定标签进入归档区（可恢复）、归档上限可配、**专注模式**命令一键关闭所有非固定标签
-- 新增 **焦点锁定**：状态栏图标点击切换，防止侧边栏偷走编辑器焦点，状态持久化
-- 关闭历史与归档区改为持久化存储（写入 `data.json`）
+- Added **tab jump / cycle hotkeys**: `Alt+1~9` to jump, `Alt+←/→` to cycle (pinned tabs first).
+- Added **per-tab navigation history**: forward/back stacks, tab-header count badges (`◀3 ▶1`), mouse side-button support, and integration with the Tab Navigator.
+- Added **auto-archive**: idle tabs are auto-closed into a restorable archive with a configurable cap, plus a **focus mode** command that closes every unpinned tab at once.
+- Added **focus lock**: a status bar icon that prevents sidebars from stealing editor focus, with persisted state.
+- Closed-tab history and the archive switched to persistent storage (written into `data.json`).
 
 ### v1.2.2
 
-- 新增「快速切换器默认新标签打开」独立开关
-- 新增标签导航器（Tab Navigator）模态框
-  - 字母快捷切换、名称搜索、Ctrl+字母关闭、历史恢复
-- 多语言完善
+- Added the independent "Quick switcher opens in new tab" switch.
+- Added the Tab Navigator modal
+  - Letter-key switching, name search, `Ctrl+letter` close, history restore.
+- Improved multilingual coverage.
 
-### 早期版本
+### Early versions
 
-- 新标签打开位置控制（5 种策略）
-- 关闭标签后激活策略（6 种策略）
-- 防止重复标签
-- 父子标签颜色标记（7 套配色）
+- New tab placement control (5 strategies)
+- Close-tab activation strategy (6 strategies)
+- Duplicate tab prevention
+- Parent-child tab color coding (7 palettes)
 
 ---
 
-## 💖 支持
+## 💖 Support
 
-如果这个插件对你有帮助，欢迎在 [GitHub](https://github.com/wonderez/tab-settings-enhanced) 上点个 Star，或提交 Issue 反馈问题与建议。
+If this plugin helps, consider leaving a Star on [GitHub](https://github.com/wonderez/tab-settings-enhanced), or filing an issue with feedback and suggestions.
 
 ---
 
 ## License
 
-本项目基于 [MIT License](./LICENSE) 开源，Copyright (c) 2026 CTA System。
+Released under the [MIT License](./LICENSE). Copyright (c) 2026 CTA System.
