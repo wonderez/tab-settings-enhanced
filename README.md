@@ -198,14 +198,13 @@
 
 ### 方式三：从源码构建（开发者）
 
+本项目**无构建流程**，`main.js` 即插件本体（手写、未压缩、未混淆），克隆后可直接使用：
+
 ```bash
-git clone <your-repo-url>
-cd tab-settings-enhanced
-npm install
-npm run build   # 产出 main.js
+git clone https://github.com/wonderez/tab-settings-enhanced.git
 ```
 
-然后将 `main.js` 与 `manifest.json` 复制到 `.obsidian/plugins/tab-settings-enhanced/`。
+将 `main.js` 与 `manifest.json` 复制（或软链接）到 `<你的Vault>/.obsidian/plugins/tab-settings-enhanced/`，在 Obsidian 中启用即可。修改代码后建议运行 `node --check main.js` 校验语法。
 
 ---
 
