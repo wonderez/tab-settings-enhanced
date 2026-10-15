@@ -18,13 +18,27 @@
 当前流程：**发布 GitHub Release → 在 community.obsidian.md 网页提交 → 自动审核**。
 本手册第二章已按此更新，第三章的旧 PR 内容仅作历史参考。
 
-### 三个最常见的提交失败原因
+### 五个最常见的提交失败原因
 
 | 审核报错 | 原因 | 解决 |
 |---|---|---|
 | `No release matches your manifest version` | Release 的 tag 带 `v` 前缀（`v1.6.11`），目录做精确匹配不认 | tag 必须是 `1.6.11`，无 `v` |
+| `Release manifest differs from repository manifest` | tag 指向的 commit 里 manifest 与 release 附件的 manifest 不一致 | 把 tag 移到含最终 manifest 的 commit 上，重新发 release |
+| `README does not appear to contain English text` | README.md 正文是中文 | 目录要求英文描述，中文版放 `README.cn.md` |
 | `Repository not found` / 无法读取 | Connect GitHub 时授权了非仓库所有者账号 | 侧栏 GitHub → Disconnect → 用 `wonderez` 重新 Connect |
 | id 冲突 / 名称重复 | `manifest.json` 的 `id` 已被其他插件占用 | 换 id（本项目 `tab-settings-enhanced` 已确认未占用） |
+
+**已实测踩过的坑（2026-10-15）**：
+
+1. tag 带 `v` 前缀 → `No release matches your manifest version`。官方 sample-plugin
+   用 `1.0.0`、Dataview 用 `0.5.70`，均无 v。
+2. tag 停在老 commit 上 → `Release manifest differs from repository manifest`
+   （authorUrl/fundingUrl 是后来才加的，老 commit 里没有）。必须把 tag 移到最终 commit。
+   移动方法：`gh release delete 1.6.11 --cleanup-tag --yes` → `git tag -d 1.6.11` →
+   在新 commit 上 `git tag 1.6.11 && git push origin 1.6.11` → 重新创建 release 并上传附件。
+3. README.md 中文 → `README does not appear to contain English text`。
+4. `window.localStorage` 读语言 → `Local Storage` Recommendation。改用官方
+   `app.loadLocalStorage('language')` 即可消除（静态扫描，注释里提 localStorage 也会中招）。
 
 > ⚠️ 关于 tag 前缀：部分旧版 Obsidian 文档写"tag 建议带 `v` 前缀"，但当前
 > community.obsidian.md 的审核做**精确匹配**，`v1.6.11` 不等于 `1.6.11`。
